@@ -379,18 +379,31 @@
     }
 
     async function checkMarketCrashStatus() {
+      let isCrashActive = false;
+      let remaining = 180;
+
       try {
         const res = await fetch('http://localhost:8088/api/pricing/market-crash/status');
         if (res.ok) {
           const data = await res.json();
-          if (data.active && !isMarketCrashActive) {
-            triggerLocalMarketCrash(data.remainingSeconds);
-          } else if (!data.active && isMarketCrashActive) {
-            stopLocalMarketCrash();
-          }
+          isCrashActive = data.active;
+          remaining = data.remainingSeconds;
+        } else {
+          throw new Error('API offline');
         }
       } catch (err) {
-        // Local mode fallback
+        const localActive = localStorage.getItem('pubexchange_market_crash_active') === 'true';
+        const endTime = parseInt(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
+        if (localActive && endTime > Date.now()) {
+          isCrashActive = true;
+          remaining = Math.max(1, Math.floor((endTime - Date.now()) / 1000));
+        }
+      }
+
+      if (isCrashActive && !isMarketCrashActive) {
+        triggerLocalMarketCrash(remaining);
+      } else if (!isCrashActive && isMarketCrashActive) {
+        stopLocalMarketCrash();
       }
     }
 
@@ -684,7 +697,8 @@
       document.getElementById('receiptModal').style.display = 'none';
     }
 
-    setInterval(checkMarketCrashStatus, 3000);
+    setInterval(checkMarketCrashStatus, 1000);
+    checkMarketCrashStatus();
     fetchProducts();
   </script>
 </body>
