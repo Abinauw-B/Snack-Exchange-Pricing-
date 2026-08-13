@@ -4,6 +4,9 @@ import com.retailpos.domain.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,21 +14,29 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MarketCrashService {
 
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private boolean crashActive = false;
     private LocalDateTime crashEndTime;
+    private String currentCrashCode;
+    private String triggerSource = "MANUAL_ADMIN";
 
     @Data
     @Builder
     public static class MarketCrashStatus {
         private boolean active;
+        private String eventCode;
+        private String triggerType; // MANUAL, SCHEDULED, RANDOM_ALGORITHM
         private long remainingSeconds;
         private LocalDateTime endTime;
         private String message;
@@ -43,17 +54,34 @@ public class MarketCrashService {
 
         return MarketCrashStatus.builder()
                 .active(crashActive)
+                .eventCode(currentCrashCode)
+                .triggerType(triggerSource)
                 .remainingSeconds(remaining)
                 .endTime(crashEndTime)
-                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! All juices set to floor price!" : "Trading normal. Dynamic price algorithm active.")
+                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! All prices set to absolute floor!" : "Trading normal. Dynamic price algorithm active.")
                 .build();
     }
 
+    /**
+     * Random Algorithm Market Crash Trigger (Runs periodic probability check every 15 minutes)
+     */
+    @Scheduled(fixedRate = 900000)
+    public void checkForRandomAlgorithmCrash() {
+        if (crashActive) return;
+        // 10% chance of random crash in high trading hours
+        if (new Random().nextDouble() < 0.10) {
+            log.info("🎲 Random Algorithmic Market Crash Event Triggered!");
+            triggerMarketCrash(3, "RANDOM_ALGORITHM");
+        }
+    }
+
     @Transactional
-    public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes) {
+    public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, String triggerType) {
         int duration = (durationMinutes > 0) ? durationMinutes : 3;
         this.crashActive = true;
         this.crashEndTime = LocalDateTime.now().plusMinutes(duration);
+        this.currentCrashCode = "CRASH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        this.triggerSource = (triggerType != null) ? triggerType : "MANUAL_ADMIN";
 
         List<Product> products = productRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
@@ -73,19 +101,37 @@ public class MarketCrashService {
                     .demandScore(0.0)
                     .stockPressurePct(0.0)
                     .timeFactorMultiplier(1.0)
-                    .explanation(String.format("🚨 MARKET CRASH TRIGGERED! Price dropped from ₹%s to absolute floor limit ₹%s for %s.", oldPrice, floorPrice, product.getFlavour()))
+                    .explanation(String.format("🚨 MARKET CRASH (%s)! Price dropped from ₹%s to floor limit ₹%s.", triggerSource, oldPrice, floorPrice))
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
         }
 
-        return getStatus();
+        MarketCrashStatus status = getStatus();
+
+        // STOMP WebSocket broadcast
+        try {
+            messagingTemplate.convertAndSend("/topic/market-crash", status);
+        } catch (Exception e) {
+            log.debug("WebSocket broadcast bypass: {}", e.getMessage());
+        }
+
+        return status;
     }
 
+    @Transactional
     public synchronized MarketCrashStatus stopMarketCrash() {
         this.crashActive = false;
         this.crashEndTime = LocalDateTime.now();
-        return getStatus();
+        MarketCrashStatus status = getStatus();
+
+        try {
+            messagingTemplate.convertAndSend("/topic/market-crash", status);
+        } catch (Exception e) {
+            log.debug("WebSocket broadcast bypass: {}", e.getMessage());
+        }
+
+        return status;
     }
 
     public boolean isCrashActive() {

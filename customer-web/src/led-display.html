@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LED Digital Stock Exchange Display - Noida Pub Exchange Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #030712;
+      --bg-panel: #0b0f19;
+      --border-panel: rgba(255, 255, 255, 0.12);
+      --green-up: #10b981;
+      --red-down: #ef4444;
+      --gold-crash: #facc15;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-black); color: white; min-height: 100vh; overflow: hidden; padding: 24px; }
+
+    /* Top LED Banner */
+    .led-header {
+      background: linear-gradient(135deg, #1e1b4b, #0f172a);
+      border: 2px solid rgba(99, 102, 241, 0.4);
+      border-radius: 20px; padding: 20px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+    .led-brand { font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #ff6b00, #ffb700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .led-clock { font-size: 36px; font-weight: 900; font-family: monospace; color: #38bdf8; }
+
+    /* Market Crash Takeover Banner */
+    .crash-led-banner {
+      background: linear-gradient(135deg, #991b1b, #dc2626);
+      border: 3px solid #f87171; border-radius: 20px;
+      padding: 24px 36px; margin-bottom: 24px;
+      display: none; justify-content: space-between; align-items: center;
+      animation: ledPulse 1s infinite alternate;
+    }
+    @keyframes ledPulse { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(239,68,68,0.5); } 100% { transform: scale(1.008); box-shadow: 0 0 45px rgba(239,68,68,0.9); } }
+
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; height: calc(100vh - 160px); }
+
+    /* Price Exchange Table */
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--border-panel); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
+    .panel-title { font-size: 20px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .exchange-table { width: 100%; border-collapse: collapse; }
+    .exchange-table th { color: #64748b; font-size: 14px; font-weight: 700; text-align: left; padding: 12px; border-bottom: 1px solid var(--border-panel); }
+    .exchange-table td { padding: 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 20px; font-weight: 700; }
+
+    .trend-badge { font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-up { background: rgba(16, 185, 129, 0.2); color: var(--green-up); border: 1px solid var(--green-up); }
+    .badge-down { background: rgba(239, 68, 68, 0.2); color: var(--red-down); border: 1px solid var(--red-down); }
+
+    /* Leaderboards (Top Gainers / Losers) */
+    .gainer-box { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .loser-box { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 16px; }
+
+    .qr-card { text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 16px; padding: 20px; margin-top: auto; border: 1px solid var(--border-panel); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Banner -->
+  <div class="led-header">
+    <div>
+      <div class="led-brand">📈 NOIDA PUB EXCHANGE BEVERAGE TICKER</div>
+      <div style="font-size: 14px; color: #94a3b8;">Real-Time Dynamic Stock Market Display Node</div>
+    </div>
+    <div class="led-clock" id="liveClock">12:00:00</div>
+  </div>
+
+  <!-- Market Crash Banner -->
+  <div class="crash-led-banner" id="ledCrashBanner">
+    <div style="font-size: 28px; font-weight: 900; color: white; display: flex; align-items: center; gap: 14px;">
+      <span>🚨 MARKET CRASH ACTIVE!</span>
+      <span style="font-size: 18px; font-weight: 600; color: #fef08a;">ALL DRINKS DROPPED TO ₹18 FLOOR PRICE</span>
+    </div>
+    <div style="font-size: 36px; font-weight: 900; font-family: monospace; color: #facc15; background: black; padding: 6px 20px; border-radius: 12px;" id="ledCrashTimer">03:00</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Live Beverage Price Grid -->
+    <div class="panel-card">
+      <div class="panel-title">🍹 Live Beverage Stock Exchange Board</div>
+      <table class="exchange-table">
+        <thead>
+          <tr>
+            <th>BEVERAGE FLAVOUR</th>
+            <th>BASE PRICE</th>
+            <th>RANGE</th>
+            <th>TREND</th>
+            <th>CURRENT PRICE</th>
+          </tr>
+        </thead>
+        <tbody id="exchangeBoardBody">
+          <!-- Rendered dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Leaderboards & QR Ordering -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="panel-card" style="flex: 1;">
+        <div class="panel-title">🔥 MARKET GAINERS &amp; LOSERS</div>
+        
+        <div class="gainer-box">
+          <div style="font-size: 13px; color: #10b981; font-weight: 800; margin-bottom: 6px;">▲ TOP GAINER (HIGH DEMAND)</div>
+          <div style="font-size: 22px; font-weight: 900;" id="topGainerName">Fresh Mango Juice</div>
+          <div style="font-size: 14px; color: #94a3b8;" id="topGainerPrice">Current Price: ₹22.00 (+10.0%)</div>
+        </div>
+
+        <div class="loser-box">
+          <div style="font-size: 13px; color: #ef4444; font-weight: 800; margin-bottom: 6px;">▼ BEST DISCOUNT FLOOR</div>
+          <div style="font-size: 22px; font-weight: 900;" id="topLoserName">Zesty Lemon Juice</div>
+          <div style="font-size: 14px; color: #94a3b8;" id="topLoserPrice">Current Price: ₹18.00 (-10.0%)</div>
+        </div>
+
+        <div class="qr-card">
+          <div style="font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">📲 SCAN TO ORDER AT TABLE</div>
+          <div style="font-size: 13px; color: #94a3b8;">Scan with Smartphone Camera for Mobile QR Order</div>
+          <div style="font-size: 28px; margin-top: 10px;">📱 🍹 ⚡</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let products = [
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', currentCupPrice: 22, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '+₹2 ▲', trendDirection: 'UP' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', currentCupPrice: 18, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '-₹2 ▼', trendDirection: 'DOWN' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', currentCupPrice: 20, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '0% FLAT', trendDirection: 'FLAT' },
+      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', currentCupPrice: 21, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '+₹1 ▲', trendDirection: 'UP' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', currentCupPrice: 19, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '-₹1 ▼', trendDirection: 'DOWN' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', currentCupPrice: 20, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '0% FLAT', trendDirection: 'FLAT' }
+    ];
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = now.toTimeString().split(' ')[0];
+    }
+
+    function renderBoard() {
+      const body = document.getElementById('exchangeBoardBody');
+      body.innerHTML = products.map(p => {
+        const isUp = p.currentCupPrice >= p.basePrice;
+        const badgeClass = isUp ? 'badge-up' : 'badge-down';
+        const arrow = isUp ? '▲' : '▼';
+        return `
+          <tr>
+            <td style="font-weight: 800;">${p.name}</td>
+            <td style="color: #94a3b8;">₹${p.basePrice}</td>
+            <td style="font-size: 15px; color: #64748b;">₹${p.minCupPrice} - ₹${p.maxCupPrice}</td>
+            <td><span class="trend-badge ${badgeClass}">${arrow} ${p.trend || '0%'}</span></td>
+            <td style="font-size: 26px; font-weight: 900; color: ${isUp ? '#10b981' : '#ef4444'};">₹${p.currentCupPrice}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function fetchLiveExchangeData() {
+      try {
+        const res = await fetch('http://localhost:8088/api/pos/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) products = data;
+        }
+      } catch (e) {}
+
+      try {
+        const crashRes = await fetch('http://localhost:8088/api/pricing/market-crash/status');
+        if (crashRes.ok) {
+          const crashData = await crashRes.json();
+          const banner = document.getElementById('ledCrashBanner');
+          if (crashData.active) {
+            banner.style.display = 'flex';
+            const m = Math.floor(crashData.remainingSeconds / 60);
+            const s = crashData.remainingSeconds % 60;
+            document.getElementById('ledCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          } else {
+            banner.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+
+      renderBoard();
+    }
+
+    setInterval(updateClock, 1000);
+    setInterval(fetchLiveExchangeData, 3000);
+    renderBoard();
+  </script>
+</body>
+</html>
