@@ -525,9 +525,32 @@
       }
     }
 
+    function applyBarStockExchangePriceShift(purchasedProductIds) {
+      if (isMarketCrashActive) return;
+
+      products.forEach(p => {
+        if (purchasedProductIds.has(p.id)) {
+          // Purchased item -> Price increases by +1 up to max ceiling
+          if (p.currentCupPrice < p.maxCupPrice) {
+            p.currentCupPrice += 1;
+            p.trendDirection = 'UP';
+            p.trend = '+₹1 ▲';
+          }
+        } else {
+          // Unpurchased item -> Price decreases by -1 down to min floor
+          if (p.currentCupPrice > p.minCupPrice) {
+            p.currentCupPrice -= 1;
+            p.trendDirection = 'DOWN';
+            p.trend = '-₹1 ▼';
+          }
+        }
+      });
+    }
+
     async function processCheckout() {
       if (cart.length === 0) return;
       const paymentMethod = document.getElementById('paymentMethodSelect').value;
+      const purchasedProductIds = new Set(cart.map(i => i.product.id));
 
       const payload = {
         items: cart.map(i => ({ productId: i.product.id, quantity: i.quantity, cupSizeMl: i.cupSizeMl })),
@@ -547,15 +570,11 @@
         } else {
           throw new Error('Checkout API offline');
         }
+        applyBarStockExchangePriceShift(purchasedProductIds);
         showReceipt(orderData);
       } catch (err) {
         // Local Bar Stock Exchange demand response
-        cart.forEach(item => {
-          if (!isMarketCrashActive) {
-            // Increase price for high demand item by +₹1 up to max limit
-            item.product.currentCupPrice = Math.min(item.product.maxCupPrice, item.product.currentCupPrice + 1);
-          }
-        });
+        applyBarStockExchangePriceShift(purchasedProductIds);
 
         const totalPayable = cart.reduce((sum, i) => sum + (i.product.currentCupPrice * i.quantity), 0);
         const orderData = {

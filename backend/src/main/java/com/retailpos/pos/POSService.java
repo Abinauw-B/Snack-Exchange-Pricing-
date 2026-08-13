@@ -2,6 +2,7 @@ package com.retailpos.pos;
 
 import com.retailpos.domain.*;
 import com.retailpos.inventory.JuiceBatchService;
+import com.retailpos.pricing.MarketCrashService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,9 @@ public class POSService {
 
     private final ProductRepository productRepository;
     private final SalesOrderRepository salesOrderRepository;
+    private final PriceHistoryRepository priceHistoryRepository;
     private final JuiceBatchService juiceBatchService;
+    private final MarketCrashService marketCrashService;
 
     @Data
     public static class CartItemRequest {
@@ -78,9 +80,13 @@ public class POSService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        Set<Long> purchasedProductIds = new HashSet<>();
+
         for (CartItemRequest itemReq : request.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + itemReq.getProductId()));
+
+            purchasedProductIds.add(product.getId());
 
             int cupSize = (itemReq.getCupSizeMl() != null && itemReq.getCupSizeMl() > 0) ? itemReq.getCupSizeMl() : product.getDefaultCupSizeMl();
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;
@@ -121,6 +127,54 @@ public class POSService {
         salesOrder.setItems(orderItems);
         salesOrderRepository.save(salesOrder);
 
+        // Bar Stock Exchange dynamic price recalculation across all products
+        if (marketCrashService == null || !marketCrashService.isCrashActive()) {
+            List<Product> allProducts = productRepository.findAll();
+            LocalDateTime now = LocalDateTime.now();
+
+            for (Product p : allProducts) {
+                BigDecimal oldPrice = p.getCurrentCupPrice();
+                BigDecimal newPrice = oldPrice;
+                String explanation;
+
+                if (purchasedProductIds.contains(p.getId())) {
+                    // Purchased item -> Price increases by +₹1 up to max boundary
+                    if (oldPrice.compareTo(p.getMaxCupPrice()) < 0) {
+                        newPrice = oldPrice.add(BigDecimal.ONE);
+                        explanation = String.format("📈 BAR STOCK SURGE: Price increased by +₹1 to ₹%s for %s due to POS purchase demand.", newPrice, p.getFlavour());
+                    } else {
+                        explanation = String.format("High demand for %s, but price is capped at max limit ₹%s.", p.getFlavour(), p.getMaxCupPrice());
+                    }
+                } else {
+                    // Unpurchased item -> Price decreases by -₹1 down to min floor boundary
+                    if (oldPrice.compareTo(p.getMinCupPrice()) > 0) {
+                        newPrice = oldPrice.subtract(BigDecimal.ONE);
+                        explanation = String.format("📉 BAR STOCK DRIFT: Price decreased by -₹1 to ₹%s for %s to incentivize unpurchased inventory.", newPrice, p.getFlavour());
+                    } else {
+                        explanation = String.format("Price for %s remains at min floor boundary ₹%s.", p.getFlavour(), p.getMinCupPrice());
+                    }
+                }
+
+                if (newPrice.compareTo(oldPrice) != 0) {
+                    p.setCurrentCupPrice(newPrice);
+                    p.setLastPriceChangeTimestamp(now);
+                    productRepository.save(p);
+
+                    PriceHistory history = PriceHistory.builder()
+                            .productId(p.getId())
+                            .oldPrice(oldPrice)
+                            .newPrice(newPrice)
+                            .demandScore(purchasedProductIds.contains(p.getId()) ? 85.0 : 25.0)
+                            .stockPressurePct(50.0)
+                            .timeFactorMultiplier(1.0)
+                            .explanation(explanation)
+                            .createdAt(now)
+                            .build();
+                    priceHistoryRepository.save(history);
+                }
+            }
+        }
+
         return CheckoutResponse.builder()
                 .orderNumber(orderNum)
                 .totalAmount(orderTotal)
@@ -131,3 +185,4 @@ public class POSService {
                 .build();
     }
 }
+
