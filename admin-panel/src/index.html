@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Control Center - Juice Shop System</title>
+  <title>Admin Control Center - Juice Bar Stock Exchange</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #090d16;
@@ -63,12 +63,20 @@
     .status-tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
     .tag-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
     .tag-depleted { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+    .tag-crash { background: #ef4444; color: #ffffff; font-weight: 800; }
 
     .btn-primary {
       background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;
     }
     .btn-primary:hover { filter: brightness(1.1); }
+
+    .btn-crash {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 800; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4); transition: all 0.2s;
+    }
+    .btn-crash:hover { filter: brightness(1.1); transform: scale(1.02); }
   </style>
 </head>
 <body>
@@ -76,7 +84,7 @@
   <div class="admin-layout">
     <nav class="sidebar">
       <div class="sidebar-title">
-        <span>🍹 Juice Admin</span>
+        <span>🍹 Bar Exchange</span>
       </div>
 
       <div class="nav-link active" id="tab-dashboard" onclick="switchTab('dashboard')">
@@ -96,7 +104,7 @@
       </div>
 
       <div style="margin-top: auto; font-size: 12px; color: var(--text-muted); padding-top: 16px; border-top: 1px solid var(--border-color);">
-        Spring Boot Backend @ Port 8088<br>Admin Control Center v1.0
+        Spring Boot Backend @ Port 8088<br>Pub Exchange Module v1.0
       </div>
     </nav>
 
@@ -104,8 +112,24 @@
       
       <!-- Dashboard Tab -->
       <div id="view-dashboard">
-        <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 8px;">Executive Dashboard</h1>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time inventory volume, POS sales metrics, and dynamic pricing activity.</p>
+        <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 8px;">Executive Command Dashboard</h1>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time inventory volume, POS sales metrics, and dynamic stock exchange activity.</p>
+
+        <!-- Market Crash Controller Banner -->
+        <div style="background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 16px; padding: 20px 28px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <span>🚨 Pub Exchange "Market Crash" Event Script</span>
+              <span class="status-tag tag-active" id="dashCrashStatusTag">TRADING NORMAL</span>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted);">Triggers digital siren gong and instantly drops all drink prices to absolute floor (₹18) for 3 minutes.</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <span style="font-size: 20px; font-weight: 800; color: #facc15; font-family: monospace; display: none;" id="adminCrashTimer">03:00</span>
+            <button class="btn-crash" id="adminTriggerCrashBtn" onclick="triggerAdminMarketCrash()">🚨 TRIGGER MARKET CRASH (3 MINS)</button>
+            <button style="padding: 10px 16px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; border-radius: 8px; cursor: pointer; display: none;" id="adminStopCrashBtn" onclick="stopAdminMarketCrash()">🛑 Stop Crash</button>
+          </div>
+        </div>
 
         <div class="metric-grid">
           <div class="metric-card">
@@ -180,7 +204,7 @@
       <div id="view-pricing" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
           <div>
-            <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 4px;">Configurable Dynamic Pricing Engine</h1>
+            <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 4px;">Pub Exchange Dynamic Pricing Engine</h1>
             <p style="color: var(--text-muted);">Real-time demand scoring, stock pressure monitoring, and step-change evaluation.</p>
           </div>
           <button class="btn-primary" onclick="triggerPriceEngine()">⚡ Run Price Engine Evaluation</button>
@@ -231,8 +255,8 @@
 
       <!-- Pricing Simulator Tab -->
       <div id="view-simulator" style="display: none;">
-        <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 4px;">Dynamic Pricing Sandbox Simulator</h1>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Simulate customer purchasing scenarios over time without modifying production tables.</p>
+        <h1 style="font-size: 26px; font-weight: 700; margin-bottom: 4px;">Bar Stock Exchange Sandbox Simulator</h1>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Simulate customer purchasing scenarios &amp; Market Crash events over time without modifying production tables.</p>
 
         <div style="display: grid; grid-template-columns: 340px 1fr; gap: 24px;">
           <div class="section-card">
@@ -265,6 +289,12 @@
                 <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Max Limit (₹)</label>
                 <input type="number" id="simMaxPrice" value="25" style="width: 100%; padding: 8px; background: #0f172a; color: white; border: 1px solid var(--border-color); border-radius: 6px;">
               </div>
+            </div>
+            <div style="margin-bottom: 18px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #f87171; font-weight: 600; cursor: pointer;">
+                <input type="checkbox" id="simIncludeCrash" checked style="width: 16px; height: 16px;">
+                <span>Inject "Market Crash" Event at Step 5</span>
+              </label>
             </div>
             <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="runSimulation()">▶️ Run Sandbox Simulation</button>
           </div>
@@ -344,6 +374,61 @@
       { id: 1, productId: 1, oldPrice: 20.00, newPrice: 21.00, demandScore: 74.5, stockPressurePct: 82.5, explanation: 'Increased price for MANGO by ₹1 to ₹21.00 due to HIGH DEMAND (Score: 74.5, Stock Pressure: 82.5%).', createdAt: '2026-08-13 11:45:00' },
       { id: 2, productId: 2, oldPrice: 20.00, newPrice: 19.00, demandScore: 32.0, stockPressurePct: 20.0, explanation: 'Decreased price for LEMON by ₹1 to ₹19.00 due to LOW DEMAND (Score: 32.0, Stock Pressure: 20.0%).', createdAt: '2026-08-13 11:30:00' }
     ];
+
+    let isAdminCrashActive = false;
+    let adminCrashTimerInterval = null;
+
+    async function triggerAdminMarketCrash() {
+      try {
+        await fetch('http://localhost:8088/api/pricing/market-crash/trigger?durationMinutes=3', { method: 'POST' });
+      } catch (err) {
+        console.log('Market crash triggered in local mode');
+      }
+
+      isAdminCrashActive = true;
+      document.getElementById('dashCrashStatusTag').textContent = '🚨 CRASH IN PROGRESS';
+      document.getElementById('dashCrashStatusTag').className = 'status-tag tag-crash';
+      document.getElementById('adminTriggerCrashBtn').style.display = 'none';
+      document.getElementById('adminStopCrashBtn').style.display = 'block';
+      document.getElementById('adminCrashTimer').style.display = 'inline';
+
+      let secs = 180;
+      if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
+      adminCrashTimerInterval = setInterval(() => {
+        secs--;
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        document.getElementById('adminCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        if (secs <= 0) stopAdminMarketCrash();
+      }, 1000);
+
+      // Add to history log
+      historyData.unshift({
+        id: Date.now(),
+        productId: 1,
+        oldPrice: 21.00,
+        newPrice: 18.00,
+        demandScore: 0.0,
+        stockPressurePct: 0.0,
+        explanation: '🚨 MARKET CRASH ROUTINE TRIGGERED! All juice drink prices dropped to absolute floor ₹18.00.',
+        createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      });
+      loadHistory();
+    }
+
+    async function stopAdminMarketCrash() {
+      try {
+        await fetch('http://localhost:8088/api/pricing/market-crash/stop', { method: 'POST' });
+      } catch (err) {}
+
+      isAdminCrashActive = false;
+      if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
+      document.getElementById('dashCrashStatusTag').textContent = 'TRADING NORMAL';
+      document.getElementById('dashCrashStatusTag').className = 'status-tag tag-active';
+      document.getElementById('adminTriggerCrashBtn').style.display = 'block';
+      document.getElementById('adminStopCrashBtn').style.display = 'none';
+      document.getElementById('adminCrashTimer').style.display = 'none';
+    }
 
     function switchTab(tabName) {
       document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -432,7 +517,7 @@
         await fetch('http://localhost:8088/api/pricing/evaluate');
         loadHistory();
       } catch (err) {
-        alert('Price Engine Evaluated');
+        alert('Pub Exchange Dynamic Price Engine Evaluated');
       }
     }
 
@@ -467,6 +552,7 @@
     }
 
     async function runSimulation() {
+      const includeCrash = document.getElementById('simIncludeCrash').checked;
       const req = {
         flavourName: document.getElementById('simFlavour').value,
         initialVolumeMl: parseInt(document.getElementById('simVolume').value),
@@ -479,56 +565,51 @@
         startTimeStr: '12:00'
       };
 
-      let result;
-      try {
-        const res = await fetch('http://localhost:8088/api/pricing/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(req)
-        });
-        if (res.ok) {
-          result = await res.json();
+      const steps = [];
+      let vol = req.initialVolumeMl;
+      let price = req.initialPrice;
+      let totalSold = 0;
+
+      for (let i = 1; i <= 10; i++) {
+        const sold = req.cupsPerInterval;
+        vol -= sold * 250;
+        totalSold += sold;
+        let score = Math.min(100, 50 + (i * 4));
+        let movement = 'UNCHANGED';
+        let explanation = `Step ${i}: Order scarcity demand evaluated. Price at ₹${price}.`;
+
+        if (includeCrash && (i === 5 || i === 6)) {
+          price = req.minPrice;
+          movement = '🚨 MARKET CRASH';
+          score = 0;
+          explanation = `Step ${i}: 🚨 MARKET CRASH EVENT TRIGGERED! Price instantly dropped to absolute floor ₹${req.minPrice}.`;
         } else {
-          throw new Error('Fallback local sandbox calculation');
-        }
-      } catch (err) {
-        const steps = [];
-        let vol = req.initialVolumeMl;
-        let price = req.initialPrice;
-        let totalSold = 0;
-
-        for (let i = 1; i <= 10; i++) {
-          const sold = req.cupsPerInterval;
-          vol -= sold * 250;
-          totalSold += sold;
-          const score = Math.min(100, 50 + (i * 4));
-          let movement = 'UNCHANGED';
-
           if (i % 2 === 0 && score >= 65 && price < req.maxPrice) {
             price += 1;
-            movement = '+₹1';
+            movement = '+₹1 ▲';
+            explanation = `Step ${i}: Demand score ${score} crossed high threshold. Price bumped by +₹1 to ₹${price}.`;
           }
-
-          steps.push({
-            stepIndex: i,
-            timeStr: `12:${(i * 5).toString().padStart(2, '0')}`,
-            remainingVolumeMl: vol,
-            cupsSoldThisStep: sold,
-            demandScore: score,
-            price: price,
-            priceMovement: movement,
-            explanation: `Step ${i}: Demand score ${score} evaluated. Price at ₹${price}.`
-          });
         }
 
-        result = {
-          flavourName: req.flavourName,
-          initialPrice: req.initialPrice,
-          finalPrice: price,
-          totalCupsSold: totalSold,
-          steps: steps
-        };
+        steps.push({
+          stepIndex: i,
+          timeStr: `12:${(i * 5).toString().padStart(2, '0')}`,
+          remainingVolumeMl: vol,
+          cupsSoldThisStep: sold,
+          demandScore: score,
+          price: price,
+          priceMovement: movement,
+          explanation: explanation
+        });
       }
+
+      const result = {
+        flavourName: req.flavourName,
+        initialPrice: req.initialPrice,
+        finalPrice: price,
+        totalCupsSold: totalSold,
+        steps: steps
+      };
 
       renderSimulationResult(result);
     }
@@ -552,9 +633,9 @@
 
       const body = document.getElementById('simTimelineBody');
       body.innerHTML = res.steps.map(s => {
-        let tagClass = '';
-        if (s.priceMovement === '+₹1') tagClass = 'tag-depleted';
-        if (s.priceMovement === '-₹1') tagClass = 'tag-active';
+        let tagClass = 'tag-active';
+        if (s.priceMovement.includes('CRASH')) tagClass = 'tag-crash';
+        else if (s.priceMovement === '+₹1 ▲') tagClass = 'tag-depleted';
 
         return `
           <tr>

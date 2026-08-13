@@ -1,63 +1,63 @@
-# Configurable Dynamic Pricing Engine Specification
+# Bar Stock Exchange & Dynamic Pricing Engine Specification
 
-## Algorithm Overview
+## 1. Algorithmic Architecture Overview
 
-The Dynamic Pricing Engine calculates real-time cup prices for juice flavours based on sales velocity, stock pressure, and time-of-day multipliers.
+The system uses a **Bar Stock Exchange dynamic demand engine** inspired by commercial pub exchange software (such as Shawman / DD). Item prices fluctuate in real time based on order scarcity, container stock pressure, and time multipliers, guarded by hard price boundaries and an automated Market Crash routine.
 
 ```
-                  +--------------------------------+
-                  |  Sales Velocity Score (S_v)    | -- (Weight w_v = 0.40) --+
-                  +--------------------------------+                          |
-                                                                              v
-                  +--------------------------------+               +----------------------+
-                  |   Stock Pressure Score (S_s)   | -- (Weight w_s = 0.40) -> | Demand Score (0-100) |
-                  +--------------------------------+               +----------------------+
-                                                                              ^
-                  +--------------------------------+                          |
-                  |     Time Factor Score (S_t)    | -- (Weight w_t = 0.20) --+
-                  +--------------------------------+
++-------------------------------------------------------------------+
+|               Real-Time POS Order Scarcity Feedback               |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|                  Dynamic Demand Calculation Engine                 |
+|  Demand Score = (0.40 * Velocity) + (0.40 * Stock) + (0.20 * Time) |
++-------------------------------------------------------------------+
+                                  |
+         +------------------------+------------------------+
+         | (Normal Trading)                                | (Market Crash Active)
+         v                                                 v
++-----------------------------+               +-----------------------------+
+| Step Price Adjustment (+/-₹1)|               |  Instant Drop to Floor ₹18  |
+| Min: ₹18  |  Max: ₹25       |               |  Digital Gong & Timer Active|
++-----------------------------+               +-----------------------------+
 ```
 
 ---
 
-## Mathematical Equations
+## 2. Core Algorithmic Logic
 
-### 1. Demand Score Equation ($0 - 100$)
+### A. Base Price (Initial State)
+- Each juice flavour boots up at an established default **Base Price** (e.g. ₹20).
+
+### B. Price Floors and Ceilings (Safety Boundary)
+- **Floor Price (`min_cup_price`)**: ₹18 — Ensures items never sell below baseline cost.
+- **Ceiling Price (`max_cup_price`)**: ₹25 — Prevents prices from becoming exorbitantly expensive.
+
+### C. Real-Time Order Scarcity Loop
+- **Surge on Demand**: When concurrent orders are placed for a drink, the scarcity index spikes, shifting its price upward (+₹1) for subsequent purchases.
+- **Drift on Inactivity**: Untouched inventory gradually drifts downward toward the floor price (₹18).
+
+---
+
+## 3. "Market Crash" Event Routine
+
+### A. Trigger & Execution
+- **Trigger**: Executed manually from the Admin Panel (`🚨 TRIGGER MARKET CRASH`) or scheduled via timer.
+- **Digital Gong / Siren**: Plays a synthesized digital siren gong alert on POS terminals.
+- **Screen Takeover Banner**: Flashing alert banner with a live countdown timer (2 to 5 minutes).
+- **Floor Drop**: Instantly overrides supply/demand scoring and drops all drink prices to their hardcoded floor limits (₹18.00).
+
+### B. Objective
+Creates a high-energy order surge as customers scramble to buy juice cups at minimum floor prices before the timer expires and normal dynamic pricing resumes.
+
+---
+
+## 4. Mathematical Equations
+
+### Demand Score Equation ($0 - 100$)
 $$\text{Demand Score} = (w_v \times S_v) + (w_s \times S_s) + (w_t \times S_t)$$
-Where default weights:
-- Velocity Weight $w_v = 0.40$
-- Stock Pressure Weight $w_s = 0.40$
-- Time Factor Weight $w_t = 0.20$
-
-### 2. Stock Pressure ($S_s$)
-$$S_s = 100\% - \text{Remaining Volume Percentage}$$
-$$S_s = 100 - \left( \frac{\text{remaining\_volume\_ml}}{\text{initial\_volume\_ml}} \times 100 \right)$$
-
-- **LOW**: $0\% - 40\%$
-- **NORMAL**: $40\% - 70\%$
-- **HIGH**: $70\% - 90\%$
-- **VERY HIGH**: $90\% - 100\%$
-
-### 3. Time Factor Multipliers ($S_t$)
-- **Morning** (06:00 - 11:00): Multiplier 1.0 (Score = 50.0)
-- **Afternoon** (11:00 - 16:00): Multiplier 1.1 (Score = 75.0)
-- **Evening** (16:00 - 21:00): Multiplier 1.2 (Score = 100.0)
-- **Night** (21:00 - 23:00): Multiplier 1.0 (Score = 50.0)
-
----
-
-## Price Adjustment & Bounded Limits
-
-1. **Step Movement**: Maximum $\pm ₹1$ step per evaluation window (5 minutes).
-2. **Cooldown Rule**: Minimum 10 minutes (`PRICE_CHANGE_COOLDOWN`) between consecutive price changes.
-3. **Hard Boundaries**:
-   $$\text{MIN\_PRICE} = ₹18 \le \text{Current Price} \le \text{MAX\_PRICE} = ₹25$$
-
----
-
-## Human-Readable Explanations
-
-Every price evaluation generates an audit log entry in `price_history` with human-readable rationale:
-- *High Demand*: `"Increased price for MANGO by ₹1 to ₹21.00 due to HIGH DEMAND (Score: 74.5, Stock Pressure: 82.5%)."`
-- *Low Demand*: `"Decreased price for LEMON by ₹1 to ₹19.00 due to LOW DEMAND (Score: 32.0, Stock Pressure: 20.0%)."`
-- *Cooldown Active*: `"Price maintained at ₹20.00 for MANGO. Price change on cooldown (4/10 mins elapsed)."`
+- **Velocity Weight ($w_v$)**: $0.40$
+- **Stock Pressure Weight ($w_s$)**: $0.40$ ($100\% - \text{Remaining Volume \%}$)
+- **Time Factor Weight ($w_t$)**: $0.20$

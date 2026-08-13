@@ -23,6 +23,7 @@ public class PriceAdjustmentService {
     private final DemandCalculationService demandCalculationService;
     private final StockPressureService stockPressureService;
     private final TimeFactorService timeFactorService;
+    private final MarketCrashService marketCrashService;
 
     @Data
     @Builder
@@ -43,6 +44,21 @@ public class PriceAdjustmentService {
     public PriceEvaluationResult evaluateAndAdjustPrice(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+
+        if (marketCrashService != null && marketCrashService.isCrashActive()) {
+            return PriceEvaluationResult.builder()
+                    .productId(productId)
+                    .flavour(product.getFlavour())
+                    .oldPrice(product.getMinCupPrice())
+                    .newPrice(product.getMinCupPrice())
+                    .priceChanged(false)
+                    .demandScore(0.0)
+                    .stockPressurePct(0.0)
+                    .timeFactorMultiplier(1.0)
+                    .explanation("🚨 Market Crash Routine Active! All products set to floor price.")
+                    .statusReason("MARKET_CRASH_ACTIVE")
+                    .build();
+        }
 
         // Read Config weights
         double wVelocity = getConfigDouble("weight_velocity", 0.40);

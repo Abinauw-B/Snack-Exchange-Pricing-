@@ -3,27 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juice Shop POS - Customer Checkout Terminal</title>
+  <title>Juice Bar Stock Exchange POS - Customer Terminal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --bg-card: #1e293b;
-      --bg-glass: rgba(30, 41, 59, 0.85);
+      --bg-dark: #070a12;
+      --bg-card: #111827;
+      --bg-glass: rgba(17, 24, 39, 0.85);
       --accent-orange: #ff6b00;
       --accent-mango: #ffb700;
-      --accent-lemon: #eab308;
-      --accent-mint: #10b981;
-      --accent-rose: #f43f5e;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --border-color: rgba(255, 255, 255, 0.1);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 24px; }
+    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 16px 24px; }
+
+    /* Stock Ticker Bar */
+    .ticker-wrap {
+      width: 100%;
+      background: linear-gradient(90deg, #1e1b4b, #0f172a);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      padding: 10px 0;
+      display: flex; align-items: center;
+    }
+    .ticker-title {
+      background: #4f46e5; color: white; font-weight: 800; font-size: 11px;
+      padding: 6px 14px; border-radius: 8px; margin-left: 12px; white-space: nowrap;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .ticker-content {
+      display: flex; gap: 24px; overflow-x: auto; scrollbar-width: none;
+      padding: 0 16px; width: 100%; white-space: nowrap;
+    }
+    .ticker-content::-webkit-scrollbar { display: none; }
+    .ticker-item { font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+
+    /* Market Crash Alert Header */
+    .market-crash-banner {
+      background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+      border: 2px solid #f87171;
+      border-radius: 16px;
+      padding: 18px 24px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center; justify-content: space-between;
+      animation: crashPulse 1.2s infinite alternate;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+    }
+    @keyframes crashPulse {
+      0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transform: scale(1); }
+      100% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); transform: scale(1.005); }
+    }
+    .crash-title { font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 12px; }
+    .crash-timer { font-size: 28px; font-weight: 900; background: #000; padding: 6px 16px; border-radius: 10px; color: #facc15; border: 1px solid #facc15; }
 
     .pos-container {
       display: grid;
@@ -41,7 +84,7 @@
       background: linear-gradient(135deg, rgba(255,107,0,0.15), rgba(234,179,8,0.15));
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
-      padding: 20px 28px;
+      padding: 18px 24px;
       border-radius: 16px;
       margin-bottom: 12px;
     }
@@ -55,7 +98,7 @@
       font-size: 26px; box-shadow: 0 4px 16px rgba(255, 107, 0, 0.4);
     }
     .brand-name {
-      font-size: 24px; font-weight: 700;
+      font-size: 24px; font-weight: 800;
       background: linear-gradient(135deg, #ffffff, #ffb700);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
@@ -78,31 +121,35 @@
     }
     .flavour-card:hover { transform: translateY(-4px); border-color: rgba(255, 183, 0, 0.5); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4); }
     .flavour-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--accent-orange), var(--accent-mango)); }
+    .flavour-card.crash-mode { border-color: #ef4444; background: rgba(127, 29, 29, 0.3); }
 
     .flavour-badge {
       align-self: flex-start; font-size: 11px; font-weight: 700;
       padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
     }
-    .badge-high { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
-    .badge-low { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-normal { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .badge-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-low { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-crash { background: #ef4444; color: #ffffff; font-weight: 900; animation: blink 0.8s infinite; }
 
-    .flavour-name { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
-    .flavour-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4; }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    .flavour-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .flavour-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4; }
 
     .price-row {
       display: flex; justify-content: space-between; align-items: baseline;
       margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);
     }
-    .price-tag { font-size: 24px; font-weight: 700; color: #ffffff; }
+    .price-tag { font-size: 26px; font-weight: 800; color: #ffffff; }
 
     .add-btn {
       width: 100%; margin-top: 16px; padding: 12px;
       background: linear-gradient(135deg, #ff6b00, #ff9100);
-      border: none; border-radius: 10px; color: white; font-weight: 600; font-size: 14px;
+      border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 14px;
       cursor: pointer; transition: all 0.2s;
     }
     .add-btn:hover { filter: brightness(1.1); box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4); }
+    .add-btn.crash-btn { background: linear-gradient(135deg, #ef4444, #dc2626); font-weight: 800; }
 
     /* Cart Panel */
     .cart-panel {
@@ -152,25 +199,45 @@
 </head>
 <body>
 
+  <!-- Live Stock Exchange Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-title">📈 BAR STOCK TICKER</div>
+    <div class="ticker-content" id="stockTickerContent">
+      <!-- Live stock price trends rendered here -->
+    </div>
+  </div>
+
+  <!-- Market Crash Banner -->
+  <div class="market-crash-banner" id="marketCrashBanner">
+    <div class="crash-title">
+      <span>🚨 MARKET CRASH ACTIVE!</span>
+      <span style="font-size: 14px; font-weight: 500; opacity: 0.9;">All Juice Flavours Dropped to Absolute Floor Limit ₹18!</span>
+    </div>
+    <div class="crash-timer" id="crashTimerDisplay">03:00</div>
+  </div>
+
   <div class="pos-container">
     <header class="header-banner">
       <div class="brand-title">
         <div class="brand-icon">🍹</div>
         <div>
-          <div class="brand-name">Juice Shop POS</div>
-          <div style="font-size: 13px; color: var(--text-muted);">Fresh Cold-Pressed Serving Terminal &bull; 250ml Serving Cup</div>
+          <div class="brand-name">Juice Bar Stock Exchange</div>
+          <div style="font-size: 13px; color: var(--text-muted);">Real-Time Order Scarcity & Dynamic Price Engine Terminal</div>
         </div>
       </div>
       <div>
         <span style="font-size: 13px; padding: 6px 14px; background: rgba(16,185,129,0.15); color: #10b981; border-radius: 20px; border: 1px solid rgba(16,185,129,0.3);">
-          ● Live Backend @ Port 8088
+          ● Bar Exchange Engine Active
         </span>
       </div>
     </header>
 
     <!-- Product Flavour Grid -->
     <main>
-      <h2 style="margin-bottom: 16px; font-size: 20px; font-weight: 600;">Fresh Juice Flavours</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 20px; font-weight: 700;">Live Juice Menu &amp; Market Pricing</h2>
+        <span style="font-size: 12px; color: var(--text-muted);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
+      </div>
       <div class="flavour-grid" id="productGrid">
         <!-- Rendered dynamically -->
       </div>
@@ -240,16 +307,93 @@
 
   <script>
     let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphanso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25 }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'DOWN' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' }
     ];
 
     let cart = [];
+    let isMarketCrashActive = false;
+    let crashRemainingSeconds = 0;
+    let crashTimerInterval = null;
+
+    // Web Audio API Gong/Siren for Market Crash
+    function playMarketCrashSiren() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 1.0);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+      } catch (e) {
+        console.log('Audio playback context ready');
+      }
+    }
+
+    async function checkMarketCrashStatus() {
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/market-crash/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.active && !isMarketCrashActive) {
+            triggerLocalMarketCrash(data.remainingSeconds);
+          } else if (!data.active && isMarketCrashActive) {
+            stopLocalMarketCrash();
+          }
+        }
+      } catch (err) {
+        // Local mode fallback
+      }
+    }
+
+    function triggerLocalMarketCrash(seconds = 180) {
+      if (isMarketCrashActive) return;
+      isMarketCrashActive = true;
+      crashRemainingSeconds = seconds;
+      playMarketCrashSiren();
+
+      // Drop all prices to min floor price ₹18
+      products.forEach(p => {
+        p.currentCupPrice = p.minCupPrice;
+        p.trendDirection = 'DOWN';
+        p.trend = '-10% [CRASH]';
+      });
+
+      document.getElementById('marketCrashBanner').style.display = 'flex';
+      renderProducts();
+      renderTicker();
+
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+      crashTimerInterval = setInterval(() => {
+        crashRemainingSeconds--;
+        const mins = Math.floor(crashRemainingSeconds / 60);
+        const secs = crashRemainingSeconds % 60;
+        document.getElementById('crashTimerDisplay').textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        if (crashRemainingSeconds <= 0) {
+          stopLocalMarketCrash();
+        }
+      }, 1000);
+    }
+
+    function stopLocalMarketCrash() {
+      isMarketCrashActive = false;
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+      document.getElementById('marketCrashBanner').style.display = 'none';
+      fetchProducts();
+    }
 
     async function fetchProducts() {
       try {
@@ -259,32 +403,60 @@
           if (data && data.length > 0) products = data;
         }
       } catch (err) {
-        console.log('Backend sync active with initial seed data');
+        console.log('Bar stock exchange using initial seed data');
       }
       renderProducts();
+      renderTicker();
+    }
+
+    function renderTicker() {
+      const container = document.getElementById('stockTickerContent');
+      container.innerHTML = products.map(p => {
+        const isUp = p.currentCupPrice >= p.basePrice;
+        const trendClass = isUp ? 'trend-up' : 'trend-down';
+        const arrow = isUp ? '▲' : '▼';
+        return `
+          <div class="ticker-item">
+            <span>${p.flavour}:</span>
+            <span class="${trendClass}">₹${p.currentCupPrice} ${arrow}</span>
+            <span style="font-size: 11px; opacity: 0.7;">[Min: ₹${p.minCupPrice}]</span>
+          </div>
+        `;
+      }).join(' &bull; ');
     }
 
     function renderProducts() {
       const grid = document.getElementById('productGrid');
       grid.innerHTML = products.map(p => {
         let badgeClass = 'badge-normal';
-        let badgeText = '✨ Standard Price';
-        if (p.currentCupPrice >= 22) { badgeClass = 'badge-high'; badgeText = '🔥 High Demand'; }
-        else if (p.currentCupPrice <= 19) { badgeClass = 'badge-low'; badgeText = '⚡ Discounted Rate'; }
+        let badgeText = '✨ Base Price';
+        if (isMarketCrashActive) {
+          badgeClass = 'badge-crash';
+          badgeText = '🚨 MARKET CRASH ₹18';
+        } else if (p.currentCupPrice >= 22) {
+          badgeClass = 'badge-high'; badgeText = '🔥 Scarcity Surge ▲';
+        } else if (p.currentCupPrice <= 19) {
+          badgeClass = 'badge-low'; badgeText = '⚡ Discount Floor ▼';
+        }
 
         return `
-          <div class="flavour-card">
+          <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''}">
             <span class="flavour-badge ${badgeClass}">${badgeText}</span>
             <div class="flavour-name">${p.name}</div>
             <div class="flavour-desc">${p.description}</div>
             <div class="price-row">
               <div>
-                <span class="price-tag">₹${p.currentCupPrice}</span>
-                <span style="font-size: 12px; color: var(--text-muted);"> / ${p.defaultCupSizeMl}ml cup</span>
+                <span class="price-tag" style="${isMarketCrashActive ? 'color: #facc15;' : ''}">₹${p.currentCupPrice}</span>
+                <span style="font-size: 12px; color: var(--text-muted);"> / ${p.defaultCupSizeMl}ml</span>
               </div>
-              <span style="font-size: 11px; color: var(--text-muted);">[₹${p.minCupPrice}-₹${p.maxCupPrice}]</span>
+              <div style="text-align: right;">
+                <span style="font-size: 11px; color: var(--text-muted); display: block;">Base ₹${p.basePrice || 20}</span>
+                <span style="font-size: 11px; color: #10b981;">[₹${p.minCupPrice} - ₹${p.maxCupPrice}]</span>
+              </div>
             </div>
-            <button class="add-btn" onclick="addToCart(${p.id})">+ Add Cup to Cart</button>
+            <button class="add-btn ${isMarketCrashActive ? 'crash-btn' : ''}" onclick="addToCart(${p.id})">
+              ${isMarketCrashActive ? '🔥 RUSH BUY AT ₹18' : '+ Add Cup to Cart'}
+            </button>
           </div>
         `;
       }).join('');
@@ -377,7 +549,14 @@
         }
         showReceipt(orderData);
       } catch (err) {
-        // Fallback local receipt calculation
+        // Local Bar Stock Exchange demand response
+        cart.forEach(item => {
+          if (!isMarketCrashActive) {
+            // Increase price for high demand item by +₹1 up to max limit
+            item.product.currentCupPrice = Math.min(item.product.maxCupPrice, item.product.currentCupPrice + 1);
+          }
+        });
+
         const totalPayable = cart.reduce((sum, i) => sum + (i.product.currentCupPrice * i.quantity), 0);
         const orderData = {
           orderNumber: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
@@ -421,13 +600,15 @@
       document.getElementById('receiptModal').style.display = 'flex';
       cart = [];
       renderCart();
-      fetchProducts(); // Refresh dynamic prices
+      renderProducts();
+      renderTicker();
     }
 
     function closeReceiptModal() {
       document.getElementById('receiptModal').style.display = 'none';
     }
 
+    setInterval(checkMarketCrashStatus, 3000);
     fetchProducts();
   </script>
 </body>

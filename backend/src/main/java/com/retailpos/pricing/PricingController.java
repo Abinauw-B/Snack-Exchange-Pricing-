@@ -22,6 +22,22 @@ public class PricingController {
     private final PricingSimulationService pricingSimulationService;
     private final PriceHistoryRepository priceHistoryRepository;
     private final SystemConfigRepository systemConfigRepository;
+    private final MarketCrashService marketCrashService;
+
+    @GetMapping("/market-crash/status")
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> getMarketCrashStatus() {
+        return ResponseEntity.ok(marketCrashService.getStatus());
+    }
+
+    @PostMapping("/market-crash/trigger")
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(defaultValue = "3") int durationMinutes) {
+        return ResponseEntity.ok(marketCrashService.triggerMarketCrash(durationMinutes));
+    }
+
+    @PostMapping("/market-crash/stop")
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> stopMarketCrash() {
+        return ResponseEntity.ok(marketCrashService.stopMarketCrash());
+    }
 
     @GetMapping("/evaluate")
     public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
