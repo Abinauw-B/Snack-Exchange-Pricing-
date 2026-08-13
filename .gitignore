@@ -1,0 +1,20 @@
+# Git Ignore for Juice Shop POS & Dynamic Pricing System
+
+# Build directories
+target/
+backend/target/
+build/
+
+# Node modules
+node_modules/
+customer-web/node_modules/
+admin-panel/node_modules/
+
+# Logs & Temporary files
+*.log
+.system_generated/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
