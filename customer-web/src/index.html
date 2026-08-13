@@ -472,14 +472,15 @@
     function renderTicker() {
       const container = document.getElementById('stockTickerContent');
       container.innerHTML = products.map(p => {
-        const isUp = p.currentCupPrice >= p.basePrice;
-        const trendClass = isUp ? 'trend-up' : 'trend-down';
-        const arrow = isUp ? '▲' : '▼';
+        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
+        const isUp = activePrice >= (p.basePrice || 20);
+        const trendClass = isMarketCrashActive ? 'trend-down' : (isUp ? 'trend-up' : 'trend-down');
+        const arrow = isMarketCrashActive ? '▼ [CRASH]' : (isUp ? '▲' : '▼');
         return `
           <div class="ticker-item">
             <span>${p.flavour}:</span>
-            <span class="${trendClass}">₹${p.currentCupPrice} ${arrow}</span>
-            <span style="font-size: 11px; opacity: 0.7;">[Min: ₹${p.minCupPrice}]</span>
+            <span class="${trendClass}">₹${activePrice} ${arrow}</span>
+            <span style="font-size: 11px; opacity: 0.7;">[Min: ₹${p.minCupPrice || 18}]</span>
           </div>
         `;
       }).join(' &bull; ');
@@ -488,20 +489,22 @@
     function renderProducts() {
       const grid = document.getElementById('productGrid');
       grid.innerHTML = products.map(p => {
+        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
+
         let badgeClass = 'badge-normal';
         let badgeText = '✨ Base Price';
         if (isMarketCrashActive) {
           badgeClass = 'badge-crash';
           badgeText = '🚨 MARKET CRASH ₹18';
-        } else if (p.currentCupPrice >= 22) {
+        } else if (activePrice >= 22) {
           badgeClass = 'badge-high'; badgeText = '🔥 Scarcity Surge ▲';
-        } else if (p.currentCupPrice <= 19) {
+        } else if (activePrice <= 19) {
           badgeClass = 'badge-low'; badgeText = '⚡ Discount Floor ▼';
         }
 
-        const pctChange = (((p.currentCupPrice - (p.basePrice || 20)) / (p.basePrice || 20)) * 100).toFixed(0);
-        const pctText = pctChange >= 0 ? `+${pctChange}% ▲` : `${pctChange}% ▼`;
-        const pctColor = pctChange > 0 ? '#10b981' : (pctChange < 0 ? '#ef4444' : '#94a3b8');
+        const pctChange = (((activePrice - (p.basePrice || 20)) / (p.basePrice || 20)) * 100).toFixed(0);
+        const pctText = isMarketCrashActive ? '-10% ▼ [CRASH]' : (pctChange >= 0 ? `+${pctChange}% ▲` : `${pctChange}% ▼`);
+        const pctColor = isMarketCrashActive ? '#ef4444' : (pctChange > 0 ? '#10b981' : (pctChange < 0 ? '#ef4444' : '#94a3b8'));
 
         return `
           <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
@@ -513,7 +516,7 @@
             <div class="flavour-desc">${p.description}</div>
             <div class="price-row">
               <div>
-                <span class="price-tag" style="${isMarketCrashActive ? 'color: #facc15;' : ''}">₹${p.currentCupPrice}</span>
+                <span class="price-tag" style="${isMarketCrashActive ? 'color: #facc15;' : ''}">₹${activePrice}</span>
                 <span style="font-size: 12px; color: var(--text-muted);"> / ${p.defaultCupSizeMl}ml</span>
               </div>
               <div style="text-align: right;">
@@ -554,7 +557,10 @@
 
       const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
       const totalVolume = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
-      const totalPayable = cart.reduce((sum, i) => sum + (i.product.currentCupPrice * i.quantity), 0);
+      const totalPayable = cart.reduce((sum, i) => {
+        const itemPrice = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
+        return sum + (itemPrice * i.quantity);
+      }, 0);
 
       countLabel.textContent = `${totalItems} cups`;
 
@@ -568,21 +574,24 @@
         checkoutBtn.disabled = true;
         checkoutBtn.textContent = '⚡ Complete POS Checkout';
       } else {
-        container.innerHTML = cart.map((item, idx) => `
-          <div class="cart-item">
-            <div>
-              <div style="font-weight: 600;">${item.product.name}</div>
-              <div style="font-size: 12px; color: var(--text-muted);">
-                ${item.cupSizeMl}ml &bull; ₹${item.product.currentCupPrice} / cup &bull; Vol: ${item.cupSizeMl * item.quantity}ml
+        container.innerHTML = cart.map((item, idx) => {
+          const itemPrice = isMarketCrashActive ? (item.product.minCupPrice || 18) : item.product.currentCupPrice;
+          return `
+            <div class="cart-item">
+              <div>
+                <div style="font-weight: 600;">${item.product.name}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                  ${item.cupSizeMl}ml &bull; ₹${itemPrice} / cup &bull; Vol: ${item.cupSizeMl * item.quantity}ml
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="item-qty-btn" onclick="updateQty(${idx}, -1)">-</button>
+                <span style="font-weight: 600; width: 20px; text-align: center;">${item.quantity}</span>
+                <button class="item-qty-btn" onclick="updateQty(${idx}, 1)">+</button>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button class="item-qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-              <span style="font-weight: 600; width: 20px; text-align: center;">${item.quantity}</span>
-              <button class="item-qty-btn" onclick="updateQty(${idx}, 1)">+</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
