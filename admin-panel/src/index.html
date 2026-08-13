@@ -666,6 +666,13 @@
       };
 
       renderSimulationResult(result);
+
+      // Instantly propagate simulation results across all client panels (Customer POS & LED Display)
+      if (includeCrash) {
+        triggerAdminMarketCrash();
+      } else {
+        broadcastEvent('PRICE_ENGINE_RUN', { flavourName: req.flavourName, simulatedPrice: price });
+      }
     }
 
     function renderSimulationResult(res) {
