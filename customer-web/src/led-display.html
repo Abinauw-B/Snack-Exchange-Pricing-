@@ -189,12 +189,13 @@
       }
 
       const banner = document.getElementById('ledCrashBanner');
+      const crashFloor = parseFloat(localStorage.getItem('pubexchange_market_crash_floor') || '18');
       if (isCrashActive) {
         banner.style.display = 'flex';
         const m = Math.floor(remainingSecs / 60);
         const s = remainingSecs % 60;
         document.getElementById('ledCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        products.forEach(p => p.currentCupPrice = p.minCupPrice || 18);
+        products.forEach(p => p.currentCupPrice = p.minCupPrice || crashFloor);
       } else {
         banner.style.display = 'none';
       }
@@ -204,7 +205,9 @@
 
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
     marketChannel.onmessage = (event) => {
-      if (event.data?.type === 'MARKET_CRASH_TRIGGER' || event.data?.type === 'MARKET_CRASH_STOP' || event.data?.type === 'PRICE_ENGINE_RUN') {
+      if (event.data?.type === 'PRODUCT_PRICE_UPDATE' && event.data.payload) {
+        applySimulatedProductUpdate(event.data.payload);
+      } else if (event.data?.type) {
         fetchLiveExchangeData();
       }
     };
@@ -214,6 +217,20 @@
         fetchLiveExchangeData();
       }
     });
+
+    function applySimulatedProductUpdate(payload) {
+      if (!payload || !payload.flavourName) return;
+      const targetName = payload.flavourName.toLowerCase();
+      products.forEach(p => {
+        if (p.name.toLowerCase().includes(targetName) || p.flavour.toLowerCase().includes(targetName)) {
+          if (payload.startPrice) p.basePrice = payload.startPrice;
+          if (payload.minPrice) p.minCupPrice = payload.minPrice;
+          if (payload.maxPrice) p.maxCupPrice = payload.maxPrice;
+          if (payload.finalPrice) p.currentCupPrice = payload.finalPrice;
+        }
+      });
+      renderBoard();
+    }
 
     setInterval(updateClock, 1000);
     setInterval(fetchLiveExchangeData, 1000);

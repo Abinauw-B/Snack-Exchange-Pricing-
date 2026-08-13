@@ -322,7 +322,7 @@
             </div>
             <div style="margin-bottom: 18px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px;">
               <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #f87171; font-weight: 600; cursor: pointer;">
-                <input type="checkbox" id="simIncludeCrash" checked style="width: 16px; height: 16px;">
+                <input type="checkbox" id="simIncludeCrash" style="width: 16px; height: 16px;">
                 <span>Inject "Market Crash" Event at Step 5</span>
               </label>
             </div>
@@ -418,7 +418,7 @@
       } catch (e) {}
     }
 
-    async function triggerAdminMarketCrash() {
+    async function triggerAdminMarketCrash(customFloorPrice = 18) {
       const secs = 180;
       const endTime = Date.now() + (secs * 1000);
 
@@ -430,7 +430,8 @@
 
       localStorage.setItem('pubexchange_market_crash_active', 'true');
       localStorage.setItem('pubexchange_market_crash_end_time', endTime.toString());
-      broadcastEvent('MARKET_CRASH_TRIGGER', { durationSeconds: secs });
+      localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
+      broadcastEvent('MARKET_CRASH_TRIGGER', { durationSeconds: secs, floorPrice: customFloorPrice });
 
       isAdminCrashActive = true;
       document.getElementById('dashCrashStatusTag').textContent = '🚨 CRASH IN PROGRESS';
@@ -454,10 +455,10 @@
         id: Date.now(),
         productId: 1,
         oldPrice: 21.00,
-        newPrice: 18.00,
+        newPrice: customFloorPrice,
         demandScore: 0.0,
         stockPressurePct: 0.0,
-        explanation: '🚨 MARKET CRASH ROUTINE TRIGGERED! All juice drink prices dropped to absolute floor ₹18.00.',
+        explanation: `🚨 MARKET CRASH ROUTINE TRIGGERED! All juice drink prices dropped to absolute floor ₹${customFloorPrice}.00.`,
         createdAt: new Date().toISOString().replace('T', ' ').substring(0, 19)
       });
       loadHistory();
@@ -667,11 +668,20 @@
 
       renderSimulationResult(result);
 
-      // Instantly propagate simulation results across all client panels (Customer POS & LED Display)
+      // Instantly propagate simulation parameters across all client panels (Customer POS & LED Display)
+      const updatePayload = {
+        flavourName: req.flavourName,
+        startPrice: req.initialPrice,
+        minPrice: req.minPrice,
+        maxPrice: req.maxPrice,
+        finalPrice: price,
+        includeCrash: includeCrash
+      };
+
+      broadcastEvent('PRODUCT_PRICE_UPDATE', updatePayload);
+
       if (includeCrash) {
-        triggerAdminMarketCrash();
-      } else {
-        broadcastEvent('PRICE_ENGINE_RUN', { flavourName: req.flavourName, simulatedPrice: price });
+        triggerAdminMarketCrash(req.minPrice);
       }
     }
 

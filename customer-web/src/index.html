@@ -371,12 +371,37 @@
     function handleCrossPanelEvent(msg) {
       if (!msg || !msg.type) return;
       if (msg.type === 'MARKET_CRASH_TRIGGER') {
+        if (msg.payload?.floorPrice) {
+          localStorage.setItem('pubexchange_market_crash_floor', msg.payload.floorPrice.toString());
+        }
         triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
       } else if (msg.type === 'MARKET_CRASH_STOP') {
         stopLocalMarketCrash();
-      } else if (msg.type === 'PRICE_ENGINE_RUN') {
+      } else if (msg.type === 'PRODUCT_PRICE_UPDATE') {
+        applySimulatedProductUpdate(msg.payload);
+      } else if (msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED') {
         fetchProducts();
       }
+    }
+
+    function applySimulatedProductUpdate(payload) {
+      if (!payload || !payload.flavourName) return;
+      const targetName = payload.flavourName.toLowerCase();
+      products.forEach(p => {
+        if (p.name.toLowerCase().includes(targetName) || p.flavour.toLowerCase().includes(targetName)) {
+          if (payload.startPrice) p.basePrice = payload.startPrice;
+          if (payload.minPrice) p.minCupPrice = payload.minPrice;
+          if (payload.maxPrice) p.maxCupPrice = payload.maxPrice;
+          if (payload.finalPrice) {
+            const oldP = p.currentCupPrice;
+            p.currentCupPrice = payload.finalPrice;
+            p.flashEffect = payload.finalPrice > oldP ? 'flash-up' : (payload.finalPrice < oldP ? 'flash-down' : '');
+            setTimeout(() => { p.flashEffect = ''; }, 1500);
+          }
+        }
+      });
+      renderProducts();
+      renderTicker();
     }
 
     async function checkMarketCrashStatus() {
@@ -411,16 +436,23 @@
       isMarketCrashActive = true;
       crashRemainingSeconds = seconds;
 
+      const crashFloor = parseFloat(localStorage.getItem('pubexchange_market_crash_floor') || '18');
+
       if (!wasActive) {
         playMarketCrashSiren();
       }
 
-      // Drop all prices to min floor price ₹18
+      // Drop all prices to min floor price limit
       products.forEach(p => {
-        p.currentCupPrice = p.minCupPrice || 18;
+        p.currentCupPrice = p.minCupPrice || crashFloor;
         p.trendDirection = 'DOWN';
         p.trend = '-10% [CRASH]';
       });
+
+      const bannerMsg = document.getElementById('marketCrashBannerMsg');
+      if (bannerMsg) {
+        bannerMsg.textContent = `All Juice Flavours Dropped to Absolute Floor Limit ₹${crashFloor}!`;
+      }
 
       document.getElementById('marketCrashBanner').style.display = 'flex';
       renderProducts();
