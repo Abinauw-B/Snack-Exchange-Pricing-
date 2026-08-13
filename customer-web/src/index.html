@@ -475,6 +475,13 @@
       isMarketCrashActive = false;
       if (crashTimerInterval) clearInterval(crashTimerInterval);
       document.getElementById('marketCrashBanner').style.display = 'none';
+      products.forEach(p => {
+        p.currentCupPrice = p.basePrice || 20;
+        p.trendDirection = 'NORMAL';
+        p.trend = '0%';
+      });
+      renderProducts();
+      renderTicker();
       fetchProducts();
     }
 

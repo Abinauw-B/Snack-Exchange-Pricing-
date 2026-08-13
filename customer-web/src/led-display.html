@@ -198,6 +198,7 @@
         products.forEach(p => p.currentCupPrice = p.minCupPrice || crashFloor);
       } else {
         banner.style.display = 'none';
+        products.forEach(p => p.currentCupPrice = p.basePrice || 20);
       }
 
       renderBoard();
