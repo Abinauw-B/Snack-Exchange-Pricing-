@@ -388,34 +388,35 @@
           const data = await res.json();
           isCrashActive = data.active;
           remaining = data.remainingSeconds;
-        } else {
-          throw new Error('API offline');
         }
-      } catch (err) {
-        const localActive = localStorage.getItem('pubexchange_market_crash_active') === 'true';
-        const endTime = parseInt(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
-        if (localActive && endTime > Date.now()) {
-          isCrashActive = true;
-          remaining = Math.max(1, Math.floor((endTime - Date.now()) / 1000));
-        }
+      } catch (err) {}
+
+      const localActive = localStorage.getItem('pubexchange_market_crash_active') === 'true';
+      const endTime = parseInt(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
+      if (localActive && endTime > Date.now()) {
+        isCrashActive = true;
+        remaining = Math.max(1, Math.floor((endTime - Date.now()) / 1000));
       }
 
-      if (isCrashActive && !isMarketCrashActive) {
+      if (isCrashActive) {
         triggerLocalMarketCrash(remaining);
-      } else if (!isCrashActive && isMarketCrashActive) {
+      } else if (isMarketCrashActive) {
         stopLocalMarketCrash();
       }
     }
 
     function triggerLocalMarketCrash(seconds = 180) {
-      if (isMarketCrashActive) return;
+      const wasActive = isMarketCrashActive;
       isMarketCrashActive = true;
       crashRemainingSeconds = seconds;
-      playMarketCrashSiren();
+
+      if (!wasActive) {
+        playMarketCrashSiren();
+      }
 
       // Drop all prices to min floor price ₹18
       products.forEach(p => {
-        p.currentCupPrice = p.minCupPrice;
+        p.currentCupPrice = p.minCupPrice || 18;
         p.trendDirection = 'DOWN';
         p.trend = '-10% [CRASH]';
       });
@@ -454,6 +455,15 @@
       } catch (err) {
         console.log('Bar stock exchange using initial seed data');
       }
+
+      if (isMarketCrashActive) {
+        products.forEach(p => {
+          p.currentCupPrice = p.minCupPrice || 18;
+          p.trendDirection = 'DOWN';
+          p.trend = '-10% [CRASH]';
+        });
+      }
+
       renderProducts();
       renderTicker();
     }

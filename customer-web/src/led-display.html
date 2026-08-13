@@ -169,21 +169,35 @@
         }
       } catch (e) {}
 
+      let isCrashActive = false;
+      let remainingSecs = 180;
+
       try {
         const crashRes = await fetch('http://localhost:8088/api/pricing/market-crash/status');
         if (crashRes.ok) {
           const crashData = await crashRes.json();
-          const banner = document.getElementById('ledCrashBanner');
-          if (crashData.active) {
-            banner.style.display = 'flex';
-            const m = Math.floor(crashData.remainingSeconds / 60);
-            const s = crashData.remainingSeconds % 60;
-            document.getElementById('ledCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-          } else {
-            banner.style.display = 'none';
-          }
+          isCrashActive = crashData.active;
+          remainingSecs = crashData.remainingSeconds;
         }
       } catch (e) {}
+
+      const localActive = localStorage.getItem('pubexchange_market_crash_active') === 'true';
+      const endTime = parseInt(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
+      if (localActive && endTime > Date.now()) {
+        isCrashActive = true;
+        remainingSecs = Math.max(1, Math.floor((endTime - Date.now()) / 1000));
+      }
+
+      const banner = document.getElementById('ledCrashBanner');
+      if (isCrashActive) {
+        banner.style.display = 'flex';
+        const m = Math.floor(remainingSecs / 60);
+        const s = remainingSecs % 60;
+        document.getElementById('ledCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        products.forEach(p => p.currentCupPrice = p.minCupPrice || 18);
+      } else {
+        banner.style.display = 'none';
+      }
 
       renderBoard();
     }
