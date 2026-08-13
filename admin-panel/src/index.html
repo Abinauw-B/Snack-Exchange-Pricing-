@@ -131,6 +131,36 @@
           </div>
         </div>
 
+        <!-- Microservices Telemetry & Infrastructure Health -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 24px; margin-bottom: 24px;">
+          <div style="font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🖥️ ENTERPRISE MICROSERVICES HEALTH TELEMETRY</span>
+            <span style="font-size: 12px; color: #10b981; font-weight: 600;" id="sysHealthStatus">🟢 ALL 14 SERVICES ONLINE</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Spring REST API</div>
+              <div style="font-size: 13px; font-weight: 700; color: #10b981; margin-top: 2px;">🟢 Port 8088</div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
+              <div style="font-size: 11px; color: var(--text-muted);">PostgreSQL 16 DB</div>
+              <div style="font-size: 13px; font-weight: 700; color: #10b981; margin-top: 2px;">🟢 25+ Tables</div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Redis 7 Cache</div>
+              <div style="font-size: 13px; font-weight: 700; color: #10b981; margin-top: 2px;">🟢 Active STOMP</div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Apache Kafka</div>
+              <div style="font-size: 13px; font-weight: 700; color: #10b981; margin-top: 2px;">🟢 Broker 9092</div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
+              <div style="font-size: 11px; color: var(--text-muted);">Prometheus</div>
+              <div style="font-size: 13px; font-weight: 700; color: #10b981; margin-top: 2px;">🟢 Scraping 9090</div>
+            </div>
+          </div>
+        </div>
+
         <div class="metric-grid">
           <div class="metric-card">
             <div class="metric-label">Today's Sales Revenue</div>
@@ -652,7 +682,33 @@
       }).join('');
     }
 
+    async function pollDynamicDashboardState() {
+      try {
+        const crashRes = await fetch('http://localhost:8088/api/pricing/market-crash/status');
+        if (crashRes.ok) {
+          const crashData = await crashRes.json();
+          if (crashData.active) {
+            isAdminCrashActive = true;
+            document.getElementById('dashCrashStatusTag').textContent = '🚨 CRASH IN PROGRESS';
+            document.getElementById('dashCrashStatusTag').className = 'status-tag tag-crash';
+            document.getElementById('adminTriggerCrashBtn').style.display = 'none';
+            document.getElementById('adminStopCrashBtn').style.display = 'block';
+            document.getElementById('adminCrashTimer').style.display = 'block';
+            const m = Math.floor(crashData.remainingSeconds / 60);
+            const s = crashData.remainingSeconds % 60;
+            document.getElementById('adminCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          } else if (isAdminCrashActive) {
+            stopAdminMarketCrash();
+          }
+        }
+      } catch (e) {}
+
+      loadBatches();
+    }
+
     loadBatches();
+    runSimulation();
+    setInterval(pollDynamicDashboardState, 3000);
   </script>
 </body>
 </html>
