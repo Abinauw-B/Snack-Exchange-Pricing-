@@ -667,22 +667,6 @@
       };
 
       renderSimulationResult(result);
-
-      // Instantly propagate simulation parameters across all client panels (Customer POS & LED Display)
-      const updatePayload = {
-        flavourName: req.flavourName,
-        startPrice: req.initialPrice,
-        minPrice: req.minPrice,
-        maxPrice: req.maxPrice,
-        finalPrice: price,
-        includeCrash: includeCrash
-      };
-
-      broadcastEvent('PRODUCT_PRICE_UPDATE', updatePayload);
-
-      if (includeCrash) {
-        triggerAdminMarketCrash(req.minPrice);
-      }
     }
 
     function renderSimulationResult(res) {
