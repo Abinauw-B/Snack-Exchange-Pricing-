@@ -188,8 +188,22 @@
       renderBoard();
     }
 
+    const marketChannel = new BroadcastChannel('pubexchange_market_channel');
+    marketChannel.onmessage = (event) => {
+      if (event.data?.type === 'MARKET_CRASH_TRIGGER' || event.data?.type === 'MARKET_CRASH_STOP' || event.data?.type === 'PRICE_ENGINE_RUN') {
+        fetchLiveExchangeData();
+      }
+    };
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_event') {
+        fetchLiveExchangeData();
+      }
+    });
+
     setInterval(updateClock, 1000);
-    setInterval(fetchLiveExchangeData, 3000);
+    setInterval(fetchLiveExchangeData, 1000);
+    fetchLiveExchangeData();
     renderBoard();
   </script>
 </body>

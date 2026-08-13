@@ -354,6 +354,30 @@
       }
     }
 
+    const marketChannel = new BroadcastChannel('pubexchange_market_channel');
+    marketChannel.onmessage = (event) => {
+      handleCrossPanelEvent(event.data);
+    };
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_event' && e.newValue) {
+        try {
+          handleCrossPanelEvent(JSON.parse(e.newValue));
+        } catch (err) {}
+      }
+    });
+
+    function handleCrossPanelEvent(msg) {
+      if (!msg || !msg.type) return;
+      if (msg.type === 'MARKET_CRASH_TRIGGER') {
+        triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
+      } else if (msg.type === 'MARKET_CRASH_STOP') {
+        stopLocalMarketCrash();
+      } else if (msg.type === 'PRICE_ENGINE_RUN') {
+        fetchProducts();
+      }
+    }
+
     async function checkMarketCrashStatus() {
       try {
         const res = await fetch('http://localhost:8088/api/pricing/market-crash/status');
