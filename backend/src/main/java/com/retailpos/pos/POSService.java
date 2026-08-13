@@ -132,26 +132,28 @@ public class POSService {
             List<Product> allProducts = productRepository.findAll();
             LocalDateTime now = LocalDateTime.now();
 
+            int totalPurchasedQty = request.getItems().stream().mapToInt(CartItemRequest::getQuantity).sum();
+
             for (Product p : allProducts) {
                 BigDecimal oldPrice = p.getCurrentCupPrice();
                 BigDecimal newPrice = oldPrice;
                 String explanation;
 
                 if (purchasedProductIds.contains(p.getId())) {
-                    // Purchased item -> Price increases by +₹1 up to max boundary
-                    if (oldPrice.compareTo(p.getMaxCupPrice()) < 0) {
-                        newPrice = oldPrice.add(BigDecimal.ONE);
-                        explanation = String.format("📈 BAR STOCK SURGE: Price increased by +₹1 to ₹%s for %s due to POS purchase demand.", newPrice, p.getFlavour());
-                    } else {
-                        explanation = String.format("High demand for %s, but price is capped at max limit ₹%s.", p.getFlavour(), p.getMaxCupPrice());
+                    // Purchased item -> Price surges proportionally (+1 or +2)
+                    int surge = Math.min(2, Math.max(1, totalPurchasedQty));
+                    newPrice = oldPrice.add(BigDecimal.valueOf(surge));
+                    if (newPrice.compareTo(p.getMaxCupPrice()) > 0) {
+                        newPrice = p.getMaxCupPrice();
                     }
+                    explanation = String.format("📈 BAR STOCK SURGE: Buying volume surge (+%d cups). Price increased from ₹%s to ₹%s for %s.", totalPurchasedQty, oldPrice, newPrice, p.getFlavour());
                 } else {
-                    // Unpurchased item -> Price decreases by -₹1 down to min floor boundary
+                    // Unpurchased items -> Dynamic market variation & capital shift discount (-1)
                     if (oldPrice.compareTo(p.getMinCupPrice()) > 0) {
                         newPrice = oldPrice.subtract(BigDecimal.ONE);
-                        explanation = String.format("📉 BAR STOCK DRIFT: Price decreased by -₹1 to ₹%s for %s to incentivize unpurchased inventory.", newPrice, p.getFlavour());
+                        explanation = String.format("📉 BAR STOCK DIVERTS: Demand shifted away. Price discounted from ₹%s to ₹%s for %s.", oldPrice, newPrice, p.getFlavour());
                     } else {
-                        explanation = String.format("Price for %s remains at min floor boundary ₹%s.", p.getFlavour(), p.getMinCupPrice());
+                        explanation = String.format("Price for %s locked at absolute floor boundary ₹%s.", p.getFlavour(), p.getMinCupPrice());
                     }
                 }
 
@@ -164,7 +166,7 @@ public class POSService {
                             .productId(p.getId())
                             .oldPrice(oldPrice)
                             .newPrice(newPrice)
-                            .demandScore(purchasedProductIds.contains(p.getId()) ? 85.0 : 25.0)
+                            .demandScore(purchasedProductIds.contains(p.getId()) ? 92.0 : 28.0)
                             .stockPressurePct(50.0)
                             .timeFactorMultiplier(1.0)
                             .explanation(explanation)
