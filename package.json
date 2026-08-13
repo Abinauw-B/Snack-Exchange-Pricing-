@@ -1,0 +1,12 @@
+{
+  "name": "juice-dynamic-price-changer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Juice Shop POS, Inventory & Dynamic Pricing System",
+  "scripts": {
+    "dev": "npm --prefix customer-web start",
+    "dev:customer": "npm --prefix customer-web start",
+    "dev:admin": "npm --prefix admin-panel start",
+    "dev:backend": "cd backend && mvn spring-boot:run"
+  }
+}
