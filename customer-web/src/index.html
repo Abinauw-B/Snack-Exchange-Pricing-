@@ -486,6 +486,8 @@
 
       custom.forEach(cp => {
         if (!cp || (!cp.id && !cp.name)) return;
+        if (cp.name && (cp.name.toLowerCase().includes('thunder') || cp.name.toLowerCase().includes('test'))) return;
+
         const idx = base.findIndex(p => 
           (cp.id && p.id === cp.id) || 
           (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase())

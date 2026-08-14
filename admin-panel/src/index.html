@@ -1012,7 +1012,7 @@
       { id: 4, username: 'cashier', fullName: 'POS Cashier', email: 'cashier@pubexchange.com', role: 'CASHIER', status: 'ACTIVE' }
     ];
 
-    let batchesData = [
+    const defaultBatches = [
       { id: 1, productId: 1, batchCode: 'BATCH-MNG-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 2, productId: 2, batchCode: 'BATCH-LMN-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 16000, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 3, productId: 3, batchCode: 'BATCH-MNT-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 19000, cupSizeMl: 250, status: 'ACTIVE' },
@@ -1021,6 +1021,20 @@
       { id: 6, productId: 6, batchCode: 'BATCH-GRP-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 15750, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 7, productId: 7, batchCode: 'BATCH-LYC-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' }
     ];
+
+    let batchesData = JSON.parse(localStorage.getItem('pubexchange_batches_data') || 'null') || JSON.parse(JSON.stringify(defaultBatches));
+
+    function saveBatchesState() {
+      try { localStorage.setItem('pubexchange_batches_data', JSON.stringify(batchesData)); } catch (e) {}
+    }
+
+    function loadBatchesState() {
+      const saved = localStorage.getItem('pubexchange_batches_data');
+      if (saved) {
+        try { batchesData = JSON.parse(saved); return; } catch (e) {}
+      }
+      batchesData = JSON.parse(JSON.stringify(defaultBatches));
+    }
 
     let historyData = [
       { id: 1, productId: 1, oldPrice: 20.00, newPrice: 21.00, demandScore: 74.5, stockPressurePct: 82.5, explanation: 'Increased price for MANGO by ₹1 to ₹21.00 due to HIGH DEMAND (Score: 74.5, Stock Pressure: 82.5%).', createdAt: '2026-08-13 11:45:00' },
@@ -1063,6 +1077,7 @@
             batch.remainingVolumeMl = Math.max(0, (batch.remainingVolumeMl || 20000) - (item.volumeMl || 250));
           }
         });
+        saveBatchesState();
       }
 
       const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
@@ -1443,6 +1458,7 @@
         });
       } catch (err) {}
 
+      saveBatchesState();
       closeEditJuiceModal();
       loadBatches();
       showToast(`Updated "${name}" details & deployed live!`, 'success');
@@ -1466,6 +1482,7 @@
       };
 
       batchesData.unshift(newBatchObj);
+      saveBatchesState();
 
       try {
         await fetch('http://localhost:8088/api/batches', {
@@ -1528,6 +1545,7 @@
         cupSizeMl: 250,
         status: 'ACTIVE'
       });
+      saveBatchesState();
 
       broadcastEvent('NEW_FLAVOUR_ADDED', { product: newProduct });
 
