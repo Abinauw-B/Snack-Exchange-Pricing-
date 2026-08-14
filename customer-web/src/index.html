@@ -464,9 +464,19 @@
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
     marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
 
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type) {
+        handleCrossPanelEvent(event.data);
+      }
+    });
+
     window.addEventListener('storage', (e) => {
       if (e.key === 'pubexchange_event' && e.newValue) {
         try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
+      }
+      if (e.key === 'pubexchange_custom_products') {
+        loadCustomProducts();
+        renderProducts();
       }
     });
 
@@ -887,7 +897,8 @@
 
     fetchProducts();
     checkMarketCrashStatus();
-    setInterval(checkMarketCrashStatus, 3000);
+    setInterval(fetchProducts, 1000);
+    setInterval(checkMarketCrashStatus, 2000);
   </script>
 </body>
 </html>
