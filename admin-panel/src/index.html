@@ -1285,21 +1285,33 @@
     }
 
     function editJuiceBatch(batchCode, productId) {
+      const batch = batchesData.find(b => b.batchCode === batchCode) || {
+        batchCode, productId, remainingVolumeMl: 17500, status: 'ACTIVE'
+      };
+      
       document.getElementById('editBatchCode').value = batchCode;
       document.getElementById('editProductId').value = productId;
       document.getElementById('editJuiceName').value = flavoursMap[productId] || `Product #${productId}`;
       document.getElementById('editJuiceDesc').value = 'Fresh handcrafted juice cooler';
-      document.getElementById('editBasePrice').value = 25;
+      document.getElementById('editBasePrice').value = 20;
       document.getElementById('editMinPrice').value = 18;
-      document.getElementById('editMaxPrice').value = 35;
-      document.getElementById('editRemainingVol').value = 17500;
-      document.getElementById('editStatus').value = 'ACTIVE';
+      document.getElementById('editMaxPrice').value = 25;
+      document.getElementById('editRemainingVol').value = batch.remainingVolumeMl || 20000;
+      document.getElementById('editStatus').value = batch.status || 'ACTIVE';
 
       document.getElementById('editJuiceModal').style.display = 'flex';
     }
 
     function closeEditJuiceModal() { document.getElementById('editJuiceModal').style.display = 'none'; }
-    function showNewBatchModal() { document.getElementById('newBatchModal').style.display = 'flex'; }
+    function showNewBatchModal() {
+      const select = document.getElementById('newBatchProductId');
+      if (select) {
+        select.innerHTML = Object.keys(flavoursMap).map(id => `
+          <option value="${id}">${flavoursMap[id]} (Product #${id})</option>
+        `).join('');
+      }
+      document.getElementById('newBatchModal').style.display = 'flex';
+    }
     function closeNewBatchModal() { document.getElementById('newBatchModal').style.display = 'none'; }
     function showNewFlavourModal() { document.getElementById('newFlavourModal').style.display = 'flex'; }
     function closeNewFlavourModal() { document.getElementById('newFlavourModal').style.display = 'none'; }
@@ -1336,24 +1348,143 @@
     }
 
     async function submitEditJuice() {
+      const batchCode = document.getElementById('editBatchCode').value;
       const productId = parseInt(document.getElementById('editProductId').value);
       const name = document.getElementById('editJuiceName').value.trim();
-      flavoursMap[productId] = name;
+      const basePrice = parseFloat(document.getElementById('editBasePrice').value) || 20;
+      const minPrice = parseFloat(document.getElementById('editMinPrice').value) || 18;
+      const maxPrice = parseFloat(document.getElementById('editMaxPrice').value) || 25;
+      const remainingVol = parseInt(document.getElementById('editRemainingVol').value) || 20000;
+      const status = document.getElementById('editStatus').value;
+
+      if (name) flavoursMap[productId] = name;
+
+      const idx = batchesData.findIndex(b => b.batchCode === batchCode);
+      if (idx !== -1) {
+        batchesData[idx].remainingVolumeMl = remainingVol;
+        batchesData[idx].status = status;
+      }
+
+      const updatePayload = {
+        productId,
+        flavourName: name,
+        startPrice: basePrice,
+        minPrice,
+        maxPrice,
+        finalPrice: basePrice
+      };
+
+      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      let cp = customProds.find(p => p.id === productId || (p.name && name && p.name.toLowerCase() === name.toLowerCase()));
+      if (cp) {
+        cp.name = name; cp.basePrice = basePrice; cp.minCupPrice = minPrice; cp.maxCupPrice = maxPrice; cp.currentCupPrice = basePrice;
+      } else {
+        customProds.push({ id: productId, name, flavour: name.toUpperCase().replace(/\s+/g, '_'), description: 'Fresh handcrafted juice cooler', defaultCupSizeMl: 250, currentCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, basePrice });
+      }
+      localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
+
+      broadcastEvent('PRODUCT_PRICE_UPDATE', updatePayload);
+      broadcastEvent('BATCH_UPDATED', { batchCode, remainingVol, status });
+
+      try {
+        await fetch(`http://localhost:8088/api/batches/${batchCode}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ remainingVolumeMl: remainingVol, status })
+        });
+      } catch (err) {}
+
       closeEditJuiceModal();
       loadBatches();
-      showToast(`Updated "${name}" details successfully!`, 'success');
+      showToast(`Updated "${name}" details & deployed live!`, 'success');
     }
 
     async function submitNewBatch() {
+      const productId = parseInt(document.getElementById('newBatchProductId').value);
+      const capacityMl = parseInt(document.getElementById('newBatchCapacityMl').value) || 20000;
+      const flavourName = flavoursMap[productId] || `Product #${productId}`;
+      const newCode = `BATCH-${flavourName.substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+
+      const newBatchObj = {
+        id: batchesData.length + 1,
+        productId,
+        batchCode: newCode,
+        containerCapacityMl: capacityMl,
+        initialVolumeMl: capacityMl,
+        remainingVolumeMl: capacityMl,
+        cupSizeMl: 250,
+        status: 'ACTIVE'
+      };
+
+      batchesData.unshift(newBatchObj);
+
+      try {
+        await fetch('http://localhost:8088/api/batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBatchObj)
+        });
+      } catch (err) {}
+
+      broadcastEvent('BATCH_UPDATED', { newBatch: newBatchObj });
+
       closeNewBatchModal();
       loadBatches();
-      showToast('Registered new 20L Container Batch!', 'success');
+      showToast(`Registered New 20L Container Batch (${newCode})!`, 'success');
     }
 
     async function submitNewFlavour() {
+      const name = document.getElementById('newFlavourName').value.trim();
+      const desc = document.getElementById('newFlavourDesc').value.trim() || 'Fresh handcrafted fruit juice';
+      const basePrice = parseFloat(document.getElementById('newFlavourBasePrice').value) || 25;
+      const minPrice = parseFloat(document.getElementById('newFlavourMinPrice').value) || 18;
+      const maxPrice = parseFloat(document.getElementById('newFlavourMaxPrice').value) || 35;
+      const volumeMl = parseInt(document.getElementById('newFlavourVolume').value) || 20000;
+
+      if (!name) {
+        showToast('Please enter a juice name!', 'warning');
+        return;
+      }
+
+      const newId = Date.now();
+      const flavourKey = name.toUpperCase().replace(/\s+/g, '_');
+      flavoursMap[newId] = name;
+
+      const newProduct = {
+        id: newId,
+        name,
+        flavour: flavourKey,
+        description: desc,
+        defaultCupSizeMl: 250,
+        currentCupPrice: basePrice,
+        minCupPrice: minPrice,
+        maxCupPrice: maxPrice,
+        basePrice,
+        trend: '+0%',
+        trendDirection: 'UP'
+      };
+
+      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      customProds.push(newProduct);
+      localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
+
+      const newCode = `BATCH-${name.substring(0, 3).toUpperCase()}-001`;
+      batchesData.unshift({
+        id: batchesData.length + 1,
+        productId: newId,
+        batchCode: newCode,
+        containerCapacityMl: volumeMl,
+        initialVolumeMl: volumeMl,
+        remainingVolumeMl: volumeMl,
+        cupSizeMl: 250,
+        status: 'ACTIVE'
+      });
+
+      broadcastEvent('NEW_FLAVOUR_ADDED', { product: newProduct });
+
       closeNewFlavourModal();
       loadBatches();
-      showToast('Saved new juice variety!', 'success');
+      showToast(`✨ Saved & Deployed "${name}" Juice Variety!`, 'success');
     }
 
     function savePlatformSettings() {
