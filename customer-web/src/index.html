@@ -869,8 +869,10 @@
         const p = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
         return sum + (p * i.quantity);
       }, 0);
+      const totalCups = cart.reduce((sum, i) => sum + i.quantity, 0);
+      const totalVolumeMl = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
 
-      const orderPayload = {
+      const apiPayload = {
         items: cart.map(i => ({
           productId: i.product.id,
           quantity: i.quantity,
@@ -886,7 +888,7 @@
         const res = await fetch('http://localhost:8088/api/pos/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderPayload)
+          body: JSON.stringify(apiPayload)
         });
         if (res.ok) {
           const data = await res.json();
@@ -918,7 +920,7 @@
 
       document.getElementById('receiptModal').style.display = 'flex';
 
-      const orderPayload = {
+      const orderBroadcastPayload = {
         orderNumber,
         totalAmount,
         cupsCount: totalCups,
@@ -932,10 +934,10 @@
       };
 
       try {
-        marketChannel.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload });
-        localStorage.setItem('pubexchange_pos_order', JSON.stringify({ ...orderPayload, timestamp: Date.now() }));
-        if (window.opener) window.opener.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload }, '*');
-        if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload }, '*');
+        marketChannel.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderBroadcastPayload });
+        localStorage.setItem('pubexchange_pos_order', JSON.stringify({ ...orderBroadcastPayload, timestamp: Date.now() }));
+        if (window.opener) window.opener.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderBroadcastPayload }, '*');
+        if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderBroadcastPayload }, '*');
       } catch (err) {}
 
       applyBarStockExchangePriceShift(purchasedIds);
