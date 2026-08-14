@@ -1001,7 +1001,24 @@
   <iframe id="posBridgeFrame" src="http://localhost:8000/bridge.html" style="display:none;"></iframe>
 
   <script>
-    const flavoursMap = { 1: 'Fresh Mango', 2: 'Zesty Lemon', 3: 'Cool Mint', 4: 'Orange Sunrise', 5: 'Strawberry Delight', 6: 'Royal Grape', 7: 'Lychee Mist' };
+    const defaultFlavoursMap = { 1: 'Fresh Mango', 2: 'Zesty Lemon', 3: 'Cool Mint', 4: 'Orange Sunrise', 5: 'Strawberry Delight', 6: 'Royal Grape', 7: 'Lychee Mist' };
+    let flavoursMap = { ...defaultFlavoursMap };
+
+    function syncFlavoursMap() {
+      Object.assign(flavoursMap, defaultFlavoursMap);
+      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      customProds.forEach(p => {
+        if (p.id && p.name) flavoursMap[p.id] = p.name;
+      });
+      const savedMap = JSON.parse(localStorage.getItem('pubexchange_flavours_map') || '{}');
+      Object.assign(flavoursMap, savedMap);
+    }
+
+    function saveFlavoursMap() {
+      try { localStorage.setItem('pubexchange_flavours_map', JSON.stringify(flavoursMap)); } catch (e) {}
+    }
+
+    syncFlavoursMap();
 
     let currentUser = { username: 'superadmin', role: 'SUPER_ADMIN', fullName: 'Super Administrator' };
 
@@ -1027,6 +1044,7 @@
     }
 
     function loadBatchesState() {
+      syncFlavoursMap();
       const saved = localStorage.getItem('pubexchange_batches_data');
       let loaded = defaultBatches;
       if (saved) {
@@ -1447,7 +1465,10 @@
       const remainingVol = parseInt(document.getElementById('editRemainingVol').value) || 20000;
       const status = document.getElementById('editStatus').value;
 
-      if (name) flavoursMap[productId] = name;
+      if (name) {
+        flavoursMap[productId] = name;
+        saveFlavoursMap();
+      }
 
       const idx = batchesData.findIndex(b => b.batchCode === batchCode);
       if (idx !== -1) {
@@ -1541,6 +1562,7 @@
       const newId = Date.now();
       const flavourKey = name.toUpperCase().replace(/\s+/g, '_');
       flavoursMap[newId] = name;
+      saveFlavoursMap();
 
       const newProduct = {
         id: newId,
