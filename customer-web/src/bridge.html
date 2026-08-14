@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pub Exchange Cross-Origin Communication Bridge</title>
+</head>
+<body>
+  <script>
+    const bc = new BroadcastChannel('pubexchange_market_channel');
+
+    window.addEventListener('message', (event) => {
+      if (!event.data || !event.data.type) return;
+
+      const { type, payload } = event.data;
+
+      // Handle custom product storage sync on Port 8000 origin
+      if (type === 'NEW_FLAVOUR_ADDED' && payload?.product) {
+        const cp = payload.product;
+        const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+        const idx = customProds.findIndex(p => p.id === cp.id || (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase()));
+        if (idx !== -1) {
+          customProds[idx] = { ...customProds[idx], ...cp };
+        } else {
+          customProds.push(cp);
+        }
+        localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
+      }
+
+      if (type === 'PRODUCT_PRICE_UPDATE' && payload) {
+        const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+        let cp = customProds.find(p => p.id === payload.productId || (p.name && payload.flavourName && p.name.toLowerCase() === payload.flavourName.toLowerCase()));
+        if (cp) {
+          if (payload.flavourName) cp.name = payload.flavourName;
+          if (payload.startPrice) {
+            cp.basePrice = payload.startPrice;
+            cp.currentCupPrice = payload.startPrice;
+          }
+          if (payload.minPrice) cp.minCupPrice = payload.minPrice;
+          if (payload.maxPrice) cp.maxCupPrice = payload.maxPrice;
+          if (payload.finalPrice) cp.currentCupPrice = payload.finalPrice;
+          localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
+        }
+      }
+
+      if (type === 'MARKET_CRASH_TRIGGER' && payload?.floorPrice) {
+        localStorage.setItem('pubexchange_market_crash_floor', payload.floorPrice.toString());
+        localStorage.setItem('pubexchange_market_crash_active', 'true');
+        localStorage.setItem('pubexchange_market_crash_end_time', (Date.now() + (payload.durationSeconds || 180) * 1000).toString());
+      }
+
+      if (type === 'MARKET_CRASH_STOP') {
+        localStorage.removeItem('pubexchange_market_crash_active');
+        localStorage.removeItem('pubexchange_market_crash_end_time');
+      }
+
+      // Broadcast on port 8000 origin channel
+      bc.postMessage({ type, payload });
+    });
+  </script>
+</body>
+</html>

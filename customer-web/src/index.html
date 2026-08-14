@@ -9,16 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #070a12;
-      --bg-card: #111827;
-      --bg-glass: rgba(17, 24, 39, 0.85);
-      --accent-orange: #ff6b00;
-      --accent-mango: #ffb700;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: rgba(255, 255, 255, 0.1);
+      --bg-dark: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-glass: #ffffff;
+      --accent-orange: #ea580c;
+      --accent-mango: #d97706;
+      --accent-green: #059669;
+      --accent-red: #dc2626;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -27,8 +27,9 @@
     /* Stock Ticker Bar */
     .ticker-wrap {
       width: 100%;
-      background: linear-gradient(90deg, #1e1b4b, #0f172a);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border-radius: 12px;
       overflow: hidden;
       margin-bottom: 16px;
@@ -36,7 +37,7 @@
       display: flex; align-items: center;
     }
     .ticker-title {
-      background: #4f46e5; color: white; font-weight: 800; font-size: 11px;
+      background: #2563eb; color: white; font-weight: 800; font-size: 11px;
       padding: 6px 14px; border-radius: 8px; margin-left: 12px; white-space: nowrap;
       letter-spacing: 1px; text-transform: uppercase;
     }
@@ -45,13 +46,13 @@
       padding: 0 16px; width: 100%; white-space: nowrap;
     }
     .ticker-content::-webkit-scrollbar { display: none; }
-    .ticker-item { font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-    .trend-up { color: #10b981; }
-    .trend-down { color: #ef4444; }
+    .ticker-item { font-size: 13px; font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 6px; }
+    .trend-up { color: #059669; }
+    .trend-down { color: #dc2626; }
 
     /* Market Crash Alert Header */
     .market-crash-banner {
-      background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+      background: linear-gradient(135deg, #fee2e2, #fecdd3);
       border: 2px solid #f87171;
       border-radius: 16px;
       padding: 18px 24px;
@@ -59,14 +60,14 @@
       display: none;
       align-items: center; justify-content: space-between;
       animation: crashPulse 1.2s infinite alternate;
-      box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
     }
     @keyframes crashPulse {
-      0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transform: scale(1); }
-      100% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); transform: scale(1.005); }
+      0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); transform: scale(1); }
+      100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); transform: scale(1.005); }
     }
-    .crash-title { font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 12px; }
-    .crash-timer { font-size: 28px; font-weight: 900; background: #000; padding: 6px 16px; border-radius: 10px; color: #facc15; border: 1px solid #facc15; }
+    .crash-title { font-size: 22px; font-weight: 800; color: #991b1b; display: flex; align-items: center; gap: 12px; }
+    .crash-timer { font-size: 28px; font-weight: 900; background: #ffffff; padding: 6px 16px; border-radius: 10px; color: #dc2626; border: 2px solid #dc2626; }
 
     .pos-container {
       display: grid;
@@ -81,8 +82,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(135deg, rgba(255,107,0,0.15), rgba(234,179,8,0.15));
-      backdrop-filter: blur(12px);
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border: 1px solid var(--border-color);
       padding: 18px 24px;
       border-radius: 16px;
@@ -92,14 +93,14 @@
     .brand-title { display: flex; align-items: center; gap: 14px; }
     .brand-icon {
       width: 48px; height: 48px;
-      background: linear-gradient(135deg, #ff6b00, #ffb700);
+      background: linear-gradient(135deg, #ea580c, #d97706);
       border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px; box-shadow: 0 4px 16px rgba(255, 107, 0, 0.4);
+      font-size: 26px; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
     }
     .brand-name {
       font-size: 24px; font-weight: 800;
-      background: linear-gradient(135deg, #ffffff, #ffb700);
+      background: linear-gradient(135deg, #ea580c, #d97706);
       background-clip: text;
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
@@ -368,9 +369,38 @@
       }
     });
 
+    function loadCustomProducts() {
+      const custom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      custom.forEach(cp => {
+        const idx = products.findIndex(p => p.id === cp.id || (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase()));
+        if (idx !== -1) {
+          products[idx] = { ...products[idx], ...cp };
+        } else {
+          products.push(cp);
+        }
+      });
+      if (!isMarketCrashActive) {
+        products.forEach(p => {
+          if (p.minCupPrice && p.currentCupPrice < p.minCupPrice) {
+            p.currentCupPrice = p.basePrice || p.minCupPrice;
+          }
+        });
+      }
+    }
+
     function handleCrossPanelEvent(msg) {
       if (!msg || !msg.type) return;
-      if (msg.type === 'MARKET_CRASH_TRIGGER') {
+      if (msg.type === 'NEW_FLAVOUR_ADDED' && msg.payload?.product) {
+        const cp = msg.payload.product;
+        const idx = products.findIndex(p => p.id === cp.id || (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase()));
+        if (idx !== -1) {
+          products[idx] = { ...products[idx], ...cp };
+        } else {
+          products.push(cp);
+        }
+        renderProducts();
+        renderTicker();
+      } else if (msg.type === 'MARKET_CRASH_TRIGGER') {
         if (msg.payload?.floorPrice) {
           localStorage.setItem('pubexchange_market_crash_floor', msg.payload.floorPrice.toString());
         }
@@ -385,11 +415,14 @@
     }
 
     function applySimulatedProductUpdate(payload) {
-      if (!payload || !payload.flavourName) return;
-      const targetName = payload.flavourName.toLowerCase();
+      if (!payload) return;
       products.forEach(p => {
-        if (p.name.toLowerCase().includes(targetName) || p.flavour.toLowerCase().includes(targetName)) {
-          if (payload.startPrice) p.basePrice = payload.startPrice;
+        if ((payload.productId && p.id === payload.productId) || (payload.flavourName && (p.name.toLowerCase().includes(payload.flavourName.toLowerCase()) || p.flavour.toLowerCase().includes(payload.flavourName.toLowerCase())))) {
+          if (payload.flavourName) p.name = payload.flavourName;
+          if (payload.startPrice) {
+            p.basePrice = payload.startPrice;
+            p.defaultCupPrice = payload.startPrice;
+          }
           if (payload.minPrice) p.minCupPrice = payload.minPrice;
           if (payload.maxPrice) p.maxCupPrice = payload.maxPrice;
           if (payload.finalPrice) {
@@ -397,6 +430,9 @@
             p.currentCupPrice = payload.finalPrice;
             p.flashEffect = payload.finalPrice > oldP ? 'flash-up' : (payload.finalPrice < oldP ? 'flash-down' : '');
             setTimeout(() => { p.flashEffect = ''; }, 1500);
+          }
+          if (!isMarketCrashActive && p.minCupPrice && p.currentCupPrice < p.minCupPrice) {
+            p.currentCupPrice = p.minCupPrice;
           }
         }
       });
@@ -495,6 +531,8 @@
       } catch (err) {
         console.log('Bar stock exchange using initial seed data');
       }
+
+      loadCustomProducts();
 
       if (isMarketCrashActive) {
         products.forEach(p => {
@@ -758,6 +796,7 @@
 
     setInterval(checkMarketCrashStatus, 1000);
     checkMarketCrashStatus();
+    loadCustomProducts();
     fetchProducts();
   </script>
 </body>

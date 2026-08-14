@@ -9,20 +9,20 @@ A production-ready retail management system for fresh juice shops featuring a **
 ```
                       +-----------------------------+
                       |    Customer / POS Web       |
-                      |     (Angular / SPA @ 4200)  |
+                      |     (Angular / SPA @ 8000)  |
                       +--------------+--------------+
                                      |
                                      v [REST / JSON]
 +-----------------------------+      |      +-----------------------------+
 |        Admin Panel          |------+----->|     Spring Boot Backend     |
-|     (Angular / SPA @ 4201)  |<----------->|        (Java 21 @ 8088)     |
+|     (Angular / SPA @ 8001)  |<----------->|        (Java 21 @ 8088)     |
 +-----------------------------+             +--------------+--------------+
-                                                           |
-                                                           v
-                                            +-----------------------------+
-                                            |   PostgreSQL / H2 Database  |
-                                            |     (Flyway Migrations)     |
-                                            +-----------------------------+
+                                           |
+                                           v
+                            +-----------------------------+
+                            |   PostgreSQL / H2 Database  |
+                            |     (Flyway Migrations)     |
+                            +-----------------------------+
 ```
 
 ---
@@ -65,18 +65,18 @@ mvn spring-boot:run
 # H2 Console: http://localhost:8088/h2-console
 ```
 
-### 2. Running Customer / POS Web Terminal (Port 4200)
+### 2. Running Customer / POS Web Terminal (Port 8000)
 ```bash
 cd customer-web
-npx http-server src -p 4200 --cors
-# Open: http://localhost:4200
+npx http-server src -p 8000 --cors
+# Open: http://localhost:8000
 ```
 
-### 3. Running Admin Control Center (Port 4201)
+### 3. Running Admin Control Center (Port 8001)
 ```bash
 cd admin-panel
-npx http-server src -p 4201 --cors
-# Open: http://localhost:4201
+npx http-server src -p 8001 --cors
+# Open: http://localhost:8001
 ```
 
 ---
@@ -95,8 +95,8 @@ mvn test
 
 ```
 ├── backend/            # Spring Boot 3.3 Java 21 REST API server & Flyway migrations
-├── customer-web/       # Customer POS single-page checkout application (Port 4200)
-├── admin-panel/        # Admin Control Center & Pricing Simulator SPA (Port 4201)
+├── customer-web/       # Customer POS single-page checkout application (Port 8000)
+├── admin-panel/        # Admin Control Center & Pricing Simulator SPA (Port 8001)
 ├── docs/               # Technical specifications (JUICE_INVENTORY, DYNAMIC_PRICING, PRICING_SIMULATION)
 └── README.md
 ```

@@ -2,7 +2,7 @@
 
 ## Purpose & Isolation
 
-The **Dynamic Pricing Simulator** is a sandbox testing module in the Admin Control Center (`/admin-panel` on port 4201) designed to allow store managers and administrators to test dynamic pricing parameters across virtual customer purchasing patterns.
+The **Dynamic Pricing Simulator** is a sandbox testing module in the Admin Control Center (`/admin-panel` on port 8001) designed to allow store managers and administrators to test dynamic pricing parameters across virtual customer purchasing patterns.
 
 > [!IMPORTANT]
 > **State Isolation Guarantee**: The simulator executes completely in-memory. It does **NOT** mutate live database tables, active container batch volumes, or production price histories.
@@ -11,7 +11,7 @@ The **Dynamic Pricing Simulator** is a sandbox testing module in the Admin Contr
 
 ## Operating Instructions
 
-1. Open the Admin Panel at `http://localhost:4201`.
+1. Open the Admin Panel at `http://localhost:8001`.
 2. Click on **"🎮 Pricing Sandbox Simulator"** in the sidebar.
 3. Configure simulation inputs:
    - **Juice Flavour**: Name of the flavour (e.g. Fresh Mango Juice).

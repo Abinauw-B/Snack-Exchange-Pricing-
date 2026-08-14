@@ -4,10 +4,12 @@ color 0A
 echo =========================================================================
 echo  NOIDA PUB EXCHANGE - DYNAMIC BEVERAGE STOCK MARKET PLATFORM
 echo =========================================================================
-echo  Starting Shared Local HTTP Server on http://localhost:8000 ...
+echo  Starting Customer Web Server on http://localhost:8000 ...
+echo  Starting Admin Panel Server on http://localhost:8001 ...
 echo.
 
 cd /d "%~dp0"
-python -m http.server 8000
+start "Customer Web (Port 8000)" cmd /k "npm --prefix customer-web start"
+start "Admin Panel (Port 8001)" cmd /k "npm --prefix admin-panel start"
 
 pause

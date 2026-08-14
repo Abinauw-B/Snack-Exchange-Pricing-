@@ -37,7 +37,7 @@ export interface CartItem {
         </div>
         <div style="display: flex; gap: 12px; align-items: center;">
           <span style="font-size: 13px; padding: 6px 12px; background: rgba(16,185,129,0.15); color: #10b981; border-radius: 20px; border: 1px solid rgba(16,185,129,0.3);">
-            &bull; POS Live @ Port 4200
+            &bull; POS Live @ Port 8000
           </span>
         </div>
       </header>

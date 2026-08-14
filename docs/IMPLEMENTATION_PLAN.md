@@ -41,10 +41,10 @@ Juice Dynamic Price Project/
 │   │   ├── application.properties        # Server port 8088 & H2/PostgreSQL config
 │   │   └── db/migration/                 # Flyway Schema & Initial Seed Data
 │   └── pom.xml
-├── customer-web/                         # Customer POS Checkout & Live Stock Ticker (Port 4200)
+├── customer-web/                         # Customer POS Checkout & Live Stock Ticker (Port 8000)
 │   ├── src/index.html                    # Glassmorphism UI, Siren Audio, Flash Cards
 │   └── package.json                      # http-server script
-├── admin-panel/                          # Executive Command Center & Sandbox Simulator (Port 4201)
+├── admin-panel/                          # Executive Command Center & Sandbox Simulator (Port 8001)
 │   ├── src/index.html                    # Container Batches, Crash Trigger, Sandbox Simulator
 │   └── package.json                      # http-server script
 ├── docs/                                 # Technical Specifications & Documentation
@@ -62,8 +62,8 @@ Juice Dynamic Price Project/
 | Component | Technology | Default Port | Description |
 | :--- | :--- | :---: | :--- |
 | **Backend REST API** | Java 21 / Spring Boot 3.3 | `8088` | REST API endpoints for POS, Inventory, Dynamic Pricing, & Market Crash. |
-| **Customer POS Terminal** | Static Single Page App | `4200` | POS checkout, Live Bar Stock Ticker, green/red flash card indicators, Siren audio. |
-| **Admin Control Center** | Static Single Page App | `4201` | Executive dashboard, 20L batch registration, Market Crash controller, Sandbox. |
+| **Customer POS Terminal** | Static Single Page App | `8000` | POS checkout, Live Bar Stock Ticker, green/red flash card indicators, Siren audio. |
+| **Admin Control Center** | Static Single Page App | `8001` | Executive dashboard, 20L batch registration, Market Crash controller, Sandbox. |
 
 ---
 
@@ -243,12 +243,12 @@ Optional<JuiceBatch> findActiveBatchForProductWithLock(@Param("productId") Long 
    npm install
    ```
 
-2. **Start Customer POS Terminal (Port 4200)**:
+2. **Start Customer POS Terminal (Port 8000)**:
    ```bash
    npm run dev:customer
    ```
 
-3. **Start Admin Control Center (Port 4201)**:
+3. **Start Admin Control Center (Port 8001)**:
    ```bash
    npm run dev:admin
    ```

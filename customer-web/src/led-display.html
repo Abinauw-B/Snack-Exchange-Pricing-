@@ -9,56 +9,56 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-black: #030712;
-      --bg-panel: #0b0f19;
-      --border-panel: rgba(255, 255, 255, 0.12);
-      --green-up: #10b981;
-      --red-down: #ef4444;
-      --gold-crash: #facc15;
+      --bg-black: #f8fafc;
+      --bg-panel: #ffffff;
+      --border-panel: #cbd5e1;
+      --green-up: #059669;
+      --red-down: #dc2626;
+      --gold-crash: #d97706;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-black); color: white; min-height: 100vh; overflow: hidden; padding: 24px; }
+    body { background: var(--bg-black); color: #0f172a; min-height: 100vh; overflow: hidden; padding: 24px; }
 
     /* Top LED Banner */
     .led-header {
-      background: linear-gradient(135deg, #1e1b4b, #0f172a);
-      border: 2px solid rgba(99, 102, 241, 0.4);
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
       border-radius: 20px; padding: 20px 32px;
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
-    .led-brand { font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #ff6b00, #ffb700); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .led-clock { font-size: 36px; font-weight: 900; font-family: monospace; color: #38bdf8; }
+    .led-brand { font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #ea580c, #d97706); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .led-clock { font-size: 36px; font-weight: 900; font-family: monospace; color: #2563eb; }
 
     /* Market Crash Takeover Banner */
     .crash-led-banner {
-      background: linear-gradient(135deg, #991b1b, #dc2626);
+      background: linear-gradient(135deg, #fee2e2, #fecdd3);
       border: 3px solid #f87171; border-radius: 20px;
       padding: 24px 36px; margin-bottom: 24px;
       display: none; justify-content: space-between; align-items: center;
       animation: ledPulse 1s infinite alternate;
     }
-    @keyframes ledPulse { 0% { transform: scale(1); box-shadow: 0 0 20px rgba(239,68,68,0.5); } 100% { transform: scale(1.008); box-shadow: 0 0 45px rgba(239,68,68,0.9); } }
+    @keyframes ledPulse { 0% { transform: scale(1); box-shadow: 0 0 15px rgba(239,68,68,0.3); } 100% { transform: scale(1.008); box-shadow: 0 0 25px rgba(239,68,68,0.5); } }
 
     .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; height: calc(100vh - 160px); }
 
     /* Price Exchange Table */
-    .panel-card { background: var(--bg-panel); border: 1px solid var(--border-panel); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
-    .panel-title { font-size: 20px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .panel-card { background: var(--bg-panel); border: 1px solid var(--border-panel); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .panel-title { font-size: 20px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
 
     .exchange-table { width: 100%; border-collapse: collapse; }
     .exchange-table th { color: #64748b; font-size: 14px; font-weight: 700; text-align: left; padding: 12px; border-bottom: 1px solid var(--border-panel); }
-    .exchange-table td { padding: 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 20px; font-weight: 700; }
+    .exchange-table td { padding: 16px 12px; border-bottom: 1px solid #f1f5f9; font-size: 20px; font-weight: 700; color: #0f172a; }
 
     .trend-badge { font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
-    .badge-up { background: rgba(16, 185, 129, 0.2); color: var(--green-up); border: 1px solid var(--green-up); }
-    .badge-down { background: rgba(239, 68, 68, 0.2); color: var(--red-down); border: 1px solid var(--red-down); }
+    .badge-up { background: #dcfce7; color: var(--green-up); border: 1px solid #bbf7d0; }
+    .badge-down { background: #ffe4e6; color: var(--red-down); border: 1px solid #fecdd3; }
 
     /* Leaderboards (Top Gainers / Losers) */
-    .gainer-box { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .loser-box { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 16px; }
+    .gainer-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .loser-box { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; padding: 16px; }
 
-    .qr-card { text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 16px; padding: 20px; margin-top: auto; border: 1px solid var(--border-panel); }
+    .qr-card { text-align: center; background: #f8fafc; border-radius: 16px; padding: 20px; margin-top: auto; border: 1px solid var(--border-panel); }
   </style>
 </head>
 <body>
@@ -160,6 +160,15 @@
       }).join('');
     }
 
+    function loadCustomProducts() {
+      const custom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      custom.forEach(cp => {
+        if (!products.some(p => p.id === cp.id)) {
+          products.push(cp);
+        }
+      });
+    }
+
     async function fetchLiveExchangeData() {
       try {
         const res = await fetch('http://localhost:8088/api/pos/products');
@@ -168,6 +177,8 @@
           if (data && data.length > 0) products = data;
         }
       } catch (e) {}
+
+      loadCustomProducts();
 
       let isCrashActive = false;
       let remainingSecs = 180;
@@ -206,7 +217,12 @@
 
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
     marketChannel.onmessage = (event) => {
-      if (event.data?.type === 'PRODUCT_PRICE_UPDATE' && event.data.payload) {
+      if (event.data?.type === 'NEW_FLAVOUR_ADDED' && event.data.payload?.product) {
+        if (!products.some(p => p.id === event.data.payload.product.id)) {
+          products.push(event.data.payload.product);
+        }
+        renderBoard();
+      } else if (event.data?.type === 'PRODUCT_PRICE_UPDATE' && event.data.payload) {
         applySimulatedProductUpdate(event.data.payload);
       } else if (event.data?.type) {
         fetchLiveExchangeData();
