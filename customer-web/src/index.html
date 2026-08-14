@@ -482,12 +482,20 @@
 
     function loadCustomProducts() {
       const base = JSON.parse(JSON.stringify(defaultProducts));
-      const custom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      const rawCustom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      
+      const custom = rawCustom.filter(cp => {
+        if (!cp || !cp.name) return false;
+        const n = cp.name.toLowerCase();
+        if (n.includes('thunder') || n.includes('pineapple') || n.includes('test')) return false;
+        return true;
+      });
+
+      if (custom.length !== rawCustom.length) {
+        localStorage.setItem('pubexchange_custom_products', JSON.stringify(custom));
+      }
 
       custom.forEach(cp => {
-        if (!cp || (!cp.id && !cp.name)) return;
-        if (cp.name && (cp.name.toLowerCase().includes('thunder') || cp.name.toLowerCase().includes('test'))) return;
-
         const idx = base.findIndex(p => 
           (cp.id && p.id === cp.id) || 
           (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase())

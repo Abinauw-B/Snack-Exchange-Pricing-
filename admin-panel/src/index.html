@@ -1022,19 +1022,45 @@
       { id: 7, productId: 7, batchCode: 'BATCH-LYC-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' }
     ];
 
-    let batchesData = JSON.parse(localStorage.getItem('pubexchange_batches_data') || 'null') || JSON.parse(JSON.stringify(defaultBatches));
-
     function saveBatchesState() {
       try { localStorage.setItem('pubexchange_batches_data', JSON.stringify(batchesData)); } catch (e) {}
     }
 
     function loadBatchesState() {
       const saved = localStorage.getItem('pubexchange_batches_data');
+      let loaded = defaultBatches;
       if (saved) {
-        try { batchesData = JSON.parse(saved); return; } catch (e) {}
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            loaded = parsed.filter(b => {
+              if (!b) return false;
+              const name = (flavoursMap[b.productId] || '').toLowerCase();
+              const code = (b.batchCode || '').toLowerCase();
+              if (name.includes('thunder') || name.includes('pineapple') || name.includes('test') || code.includes('thu') || code.includes('pin')) return false;
+              return true;
+            });
+          }
+        } catch (e) {}
       }
-      batchesData = JSON.parse(JSON.stringify(defaultBatches));
+      batchesData = JSON.parse(JSON.stringify(loaded.length > 0 ? loaded : defaultBatches));
+      saveBatchesState();
     }
+
+    function cleanCustomProductsStorage() {
+      const raw = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+      const cleaned = raw.filter(p => {
+        if (!p || !p.name) return false;
+        const n = p.name.toLowerCase();
+        if (n.includes('thunder') || n.includes('pineapple') || n.includes('test')) return false;
+        return true;
+      });
+      localStorage.setItem('pubexchange_custom_products', JSON.stringify(cleaned));
+    }
+
+    cleanCustomProductsStorage();
+    let batchesData = defaultBatches;
+    loadBatchesState();
 
     let historyData = [
       { id: 1, productId: 1, oldPrice: 20.00, newPrice: 21.00, demandScore: 74.5, stockPressurePct: 82.5, explanation: 'Increased price for MANGO by ₹1 to ₹21.00 due to HIGH DEMAND (Score: 74.5, Stock Pressure: 82.5%).', createdAt: '2026-08-13 11:45:00' },
