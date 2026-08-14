@@ -480,7 +480,38 @@
       }
     });
 
+    function saveDynamicProductsState() {
+      try {
+        localStorage.setItem('pubexchange_dynamic_products', JSON.stringify(products));
+      } catch (e) {}
+    }
+
     function loadCustomProducts() {
+      const activePriceMap = {};
+      const activeTrendMap = {};
+      const activeDirMap = {};
+
+      if (products && Array.isArray(products)) {
+        products.forEach(p => {
+          if (p.id && p.currentCupPrice !== undefined) {
+            activePriceMap[p.id] = p.currentCupPrice;
+            activeTrendMap[p.id] = p.trend;
+            activeDirMap[p.id] = p.trendDirection;
+          }
+        });
+      }
+
+      const savedDynamic = JSON.parse(localStorage.getItem('pubexchange_dynamic_products') || '[]');
+      savedDynamic.forEach(sp => {
+        if (sp.id && sp.currentCupPrice !== undefined) {
+          if (activePriceMap[sp.id] === undefined) {
+            activePriceMap[sp.id] = sp.currentCupPrice;
+            activeTrendMap[sp.id] = sp.trend;
+            activeDirMap[sp.id] = sp.trendDirection;
+          }
+        }
+      });
+
       const base = JSON.parse(JSON.stringify(defaultProducts));
       const rawCustom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
       
@@ -504,6 +535,14 @@
           base[idx] = { ...base[idx], ...cp };
         } else {
           base.push(cp);
+        }
+      });
+
+      base.forEach(p => {
+        if (activePriceMap[p.id] !== undefined) {
+          p.currentCupPrice = activePriceMap[p.id];
+          if (activeTrendMap[p.id] !== undefined) p.trend = activeTrendMap[p.id];
+          if (activeDirMap[p.id] !== undefined) p.trendDirection = activeDirMap[p.id];
         }
       });
 
@@ -842,27 +881,33 @@
         if (purchasedProductIds.has(p.id)) {
           if (p.currentCupPrice < p.maxCupPrice) {
             p.currentCupPrice += 1;
+            const diff = p.currentCupPrice - (p.basePrice || 20);
+            const pct = Math.round((diff / (p.basePrice || 20)) * 100);
             p.trendDirection = 'UP';
-            p.trend = '+₹1 ▲';
+            p.trend = `+${pct}% ▲`;
             p.flashEffect = 'flash-surge';
           }
         } else {
-          if (p.currentCupPrice > p.minCupPrice) {
+          if (p.currentCupPrice > p.basePrice) {
             p.currentCupPrice -= 1;
-            p.trendDirection = 'DOWN';
-            p.trend = '-₹1 ▼';
+            const diff = p.currentCupPrice - (p.basePrice || 20);
+            const pct = Math.round((diff / (p.basePrice || 20)) * 100);
+            p.trendDirection = pct < 0 ? 'DOWN' : (pct > 0 ? 'UP' : 'FLAT');
+            p.trend = `${pct >= 0 ? '+' : ''}${pct}% ${pct < 0 ? '▼' : '▲'}`;
             p.flashEffect = 'flash-discount';
           }
         }
       });
 
+      saveDynamicProductsState();
       renderProducts();
       renderTicker();
 
       const priceUpdates = products.map(p => ({
         productId: p.id,
         flavourName: p.name,
-        finalPrice: p.currentCupPrice
+        finalPrice: p.currentCupPrice,
+        trend: p.trend
       }));
 
       try {

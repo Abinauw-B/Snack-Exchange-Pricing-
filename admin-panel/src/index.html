@@ -1260,16 +1260,24 @@
     }
 
     async function loadBatches() {
+      let loadedFromBackend = false;
       try {
         const res = await fetch('http://localhost:8088/api/batches');
         if (res.ok) {
           const data = await res.json();
-          if (data && data.length > 0) batchesData = data;
+          if (data && Array.isArray(data) && data.length > 0) {
+            batchesData = data;
+            loadedFromBackend = true;
+            saveBatchesState();
+          }
         }
       } catch (err) { }
 
-      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
-      customProds.forEach(p => { flavoursMap[p.id] = p.name; });
+      if (!loadedFromBackend) {
+        loadBatchesState();
+      }
+
+      syncFlavoursMap();
 
       renderDashboardBatches();
       renderBatchesTable();
