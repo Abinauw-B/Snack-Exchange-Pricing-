@@ -1035,6 +1035,20 @@
     let donutChartInstance = null;
 
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
+    marketChannel.onmessage = (event) => {
+      if (event.data?.type === 'BATCH_PRODUCT_PRICE_UPDATED' || event.data?.type === 'POS_ORDER_COMPLETED') {
+        loadBatches();
+        renderCharts();
+        showToast('🔄 Real-Time POS Sync: Order volume & prices updated!', 'success');
+      }
+    };
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_event' && e.newValue) {
+        loadBatches();
+        renderCharts();
+      }
+    });
 
     function showToast(msg, type = 'info') {
       const container = document.getElementById('toastContainer');
