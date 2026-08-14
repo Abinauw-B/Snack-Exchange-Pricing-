@@ -481,15 +481,24 @@
     });
 
     function loadCustomProducts() {
+      const base = JSON.parse(JSON.stringify(defaultProducts));
       const custom = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
+
       custom.forEach(cp => {
-        const idx = products.findIndex(p => p.id === cp.id || (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase()));
+        if (!cp || (!cp.id && !cp.name)) return;
+        const idx = base.findIndex(p => 
+          (cp.id && p.id === cp.id) || 
+          (p.name && cp.name && p.name.toLowerCase() === cp.name.toLowerCase())
+        );
         if (idx !== -1) {
-          products[idx] = { ...products[idx], ...cp };
+          base[idx] = { ...base[idx], ...cp };
         } else {
-          products.push(cp);
+          base.push(cp);
         }
       });
+
+      products = base;
+
       if (!isMarketCrashActive) {
         products.forEach(p => {
           if (p.minCupPrice && p.currentCupPrice < p.minCupPrice) {
