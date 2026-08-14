@@ -6,74 +6,81 @@
   <title>Juice Bar Stock Exchange POS - Customer Terminal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #f8fafc;
+      --bg-main: #f8fafc;
       --bg-card: #ffffff;
-      --bg-glass: #ffffff;
-      --accent-orange: #ea580c;
-      --accent-mango: #d97706;
-      --accent-green: #059669;
-      --accent-red: #dc2626;
+      --accent-orange: #ff6b00;
+      --accent-mango: #f59e0b;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
       --text-main: #0f172a;
-      --text-muted: #64748b;
+      --text-muted: #475569;
       --border-color: #cbd5e1;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.07), 0 8px 10px -6px rgba(0,0,0,0.03);
+      --shadow-hover: 0 20px 35px -10px rgba(245, 158, 11, 0.2), 0 10px 15px -5px rgba(0,0,0,0.06);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 16px 24px; }
+    body { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%); color: var(--text-main); min-height: 100vh; padding: 20px 28px; }
 
     /* Stock Ticker Bar */
     .ticker-wrap {
       width: 100%;
       background: #ffffff;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: 18px;
       overflow: hidden;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       padding: 10px 0;
       display: flex; align-items: center;
     }
     .ticker-title {
-      background: #2563eb; color: white; font-weight: 800; font-size: 11px;
-      padding: 6px 14px; border-radius: 8px; margin-left: 12px; white-space: nowrap;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white; font-weight: 900; font-size: 12px;
+      padding: 8px 18px; border-radius: 12px; margin-left: 14px; white-space: nowrap;
       letter-spacing: 1px; text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
     .ticker-content {
-      display: flex; gap: 24px; overflow-x: auto; scrollbar-width: none;
-      padding: 0 16px; width: 100%; white-space: nowrap;
+      display: flex; gap: 28px; overflow-x: auto; scrollbar-width: none;
+      padding: 0 20px; width: 100%; white-space: nowrap;
     }
     .ticker-content::-webkit-scrollbar { display: none; }
-    .ticker-item { font-size: 13px; font-weight: 700; color: #1e293b; display: inline-flex; align-items: center; gap: 6px; }
-    .trend-up { color: #059669; }
-    .trend-down { color: #dc2626; }
+    .ticker-item { font-size: 14px; font-weight: 800; color: #0f172a; display: inline-flex; align-items: center; gap: 8px; }
+    .trend-up { color: #047857; background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 3px 10px; border-radius: 8px; border: 1px solid #86efac; }
+    .trend-down { color: #b91c1c; background: linear-gradient(135deg, #ffe4e6, #fecdd3); padding: 3px 10px; border-radius: 8px; border: 1px solid #fda4af; }
 
     /* Market Crash Alert Header */
     .market-crash-banner {
-      background: linear-gradient(135deg, #fee2e2, #fecdd3);
-      border: 2px solid #f87171;
-      border-radius: 16px;
-      padding: 18px 24px;
-      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+      border: 3px solid #ff758c;
+      border-radius: 22px;
+      padding: 22px 30px;
+      margin-bottom: 24px;
       display: none;
       align-items: center; justify-content: space-between;
-      animation: crashPulse 1.2s infinite alternate;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+      animation: crashPulse 1s infinite alternate;
+      box-shadow: 0 12px 35px rgba(255, 65, 108, 0.4);
+      color: white;
     }
     @keyframes crashPulse {
-      0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); transform: scale(1); }
-      100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); transform: scale(1.005); }
+      0% { box-shadow: 0 0 20px rgba(255, 65, 108, 0.4); transform: scale(1); }
+      100% { box-shadow: 0 0 40px rgba(255, 65, 108, 0.7); transform: scale(1.008); }
     }
-    .crash-title { font-size: 22px; font-weight: 800; color: #991b1b; display: flex; align-items: center; gap: 12px; }
-    .crash-timer { font-size: 28px; font-weight: 900; background: #ffffff; padding: 6px 16px; border-radius: 10px; color: #dc2626; border: 2px solid #dc2626; }
+    .crash-title { font-size: 24px; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .crash-timer { font-size: 34px; font-weight: 900; background: #ffffff; padding: 6px 24px; border-radius: 14px; color: #ff416c; border: 3px solid #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
     .pos-container {
       display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 24px;
-      max-width: 1440px;
+      grid-template-columns: 1fr 430px;
+      gap: 28px;
+      max-width: 1580px;
       margin: 0 auto;
     }
 
@@ -82,132 +89,208 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #ffffff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-      padding: 18px 24px;
-      border-radius: 16px;
-      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.12);
+      border: 2px solid #fde68a;
+      padding: 22px 30px;
+      border-radius: 22px;
+      margin-bottom: 8px;
     }
 
-    .brand-title { display: flex; align-items: center; gap: 14px; }
+    .brand-title { display: flex; align-items: center; gap: 18px; }
     .brand-icon {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, #ea580c, #d97706);
-      border-radius: 14px;
+      width: 58px; height: 58px;
+      background: linear-gradient(135deg, #ff6b00, #ff8800);
+      border-radius: 18px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+      font-size: 32px; box-shadow: 0 8px 22px rgba(255, 107, 0, 0.4);
     }
     .brand-name {
-      font-size: 24px; font-weight: 800;
-      background: linear-gradient(135deg, #ea580c, #d97706);
+      font-size: 28px; font-weight: 900;
+      background: linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #d97706 100%);
       background-clip: text;
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
     .flavour-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
     }
 
     .flavour-card {
-      background: var(--bg-glass);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 20px;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 24px;
       display: flex; flex-direction: column; justify-content: space-between;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative; overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
     }
-    .flavour-card:hover { transform: translateY(-4px); border-color: rgba(255, 183, 0, 0.5); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4); }
-    .flavour-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--accent-orange), var(--accent-mango)); }
-    .flavour-card.crash-mode { border-color: #ef4444; background: rgba(127, 29, 29, 0.3); }
+
+    /* Fruit Specific Custom Gradient Card Styling */
+    .card-mango { background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%); border-color: #fed7aa; }
+    .card-mango::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .card-mango:hover { border-color: #f59e0b; box-shadow: 0 20px 35px rgba(245, 158, 11, 0.25); }
+
+    .card-lemon { background: linear-gradient(145deg, #ffffff 0%, #fefce8 100%); border-color: #fef08a; }
+    .card-lemon::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #eab308, #ca8a04); }
+    .card-lemon:hover { border-color: #eab308; box-shadow: 0 20px 35px rgba(234, 179, 8, 0.25); }
+
+    .card-mint { background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%); border-color: #bbf7d0; }
+    .card-mint::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #10b981, #059669); }
+    .card-mint:hover { border-color: #10b981; box-shadow: 0 20px 35px rgba(16, 185, 129, 0.25); }
+
+    .card-orange { background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
+    .card-orange::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #ff6b00, #ea580c); }
+    .card-orange:hover { border-color: #ff6b00; box-shadow: 0 20px 35px rgba(255, 107, 0, 0.25); }
+
+    .card-strawberry { background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%); border-color: #fecdd3; }
+    .card-strawberry::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #f43f5e, #e11d48); }
+    .card-strawberry:hover { border-color: #f43f5e; box-shadow: 0 20px 35px rgba(244, 63, 94, 0.25); }
+
+    .card-grape { background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%); border-color: #e9d5ff; }
+    .card-grape::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #a855f7, #7e22ce); }
+    .card-grape:hover { border-color: #a855f7; box-shadow: 0 20px 35px rgba(168, 85, 247, 0.25); }
+
+    .card-lychee { background: linear-gradient(145deg, #ffffff 0%, #fdf2f8 100%); border-color: #fbcfe8; }
+    .card-lychee::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #ec4899, #be185d); }
+    .card-lychee:hover { border-color: #ec4899; box-shadow: 0 20px 35px rgba(236, 72, 153, 0.25); }
+
+    .flavour-card:hover {
+      transform: translateY(-6px) scale(1.02);
+    }
+    
+    .flavour-card.crash-mode {
+      border-color: #ef4444 !important;
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6) !important;
+      box-shadow: 0 12px 30px rgba(239, 68, 68, 0.3) !important;
+    }
     .flavour-card.flash-surge { animation: flashSurgeAnim 1s ease-out; }
     .flavour-card.flash-discount { animation: flashDiscountAnim 1s ease-out; }
 
     @keyframes flashSurgeAnim {
-      0% { border-color: #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.6); transform: scale(1.02); }
-      100% { border-color: var(--border-color); transform: scale(1); }
+      0% { border-color: #10b981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.7); transform: scale(1.04); }
+      100% { transform: scale(1); }
     }
 
     @keyframes flashDiscountAnim {
-      0% { border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); transform: scale(0.98); }
-      100% { border-color: var(--border-color); transform: scale(1); }
+      0% { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.7); transform: scale(0.96); }
+      100% { transform: scale(1); }
     }
 
     .flavour-badge {
-      align-self: flex-start; font-size: 11px; font-weight: 700;
-      padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+      font-size: 12px; font-weight: 800;
+      padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .badge-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
-    .badge-low { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-crash { background: #ef4444; color: #ffffff; font-weight: 900; animation: blink 0.8s infinite; }
+    .badge-high { background: linear-gradient(135deg, #fee2e2, #fecdd3); color: #991b1b; border: 1px solid #fca5a5; }
+    .badge-low { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border: 1px solid #86efac; }
+    .badge-normal { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border: 1px solid #93c5fd; }
+    .badge-crash { background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; font-weight: 900; animation: blink 0.8s infinite; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
 
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-    .flavour-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-    .flavour-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4; }
+    .flavour-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+    .flavour-icon { font-size: 34px; width: 50px; height: 50px; background: #ffffff; border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+    .flavour-name { font-size: 21px; font-weight: 900; color: #0f172a; line-height: 1.2; }
+    .flavour-desc { font-size: 14px; color: #475569; margin-bottom: 18px; line-height: 1.4; min-height: 40px; font-weight: 500; }
 
-    .price-row {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);
+    .price-box {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
-    .price-tag { font-size: 26px; font-weight: 800; color: #ffffff; }
+    .price-tag { font-size: 34px; font-weight: 900; color: #0f172a; letter-spacing: -1px; }
 
     .add-btn {
-      width: 100%; margin-top: 16px; padding: 12px;
-      background: linear-gradient(135deg, #ff6b00, #ff9100);
-      border: none; border-radius: 10px; color: white; font-weight: 700; font-size: 14px;
-      cursor: pointer; transition: all 0.2s;
+      width: 100%; padding: 16px;
+      background: linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #d97706 100%);
+      border: none; border-radius: 16px; color: white; font-weight: 900; font-size: 15px;
+      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 22px rgba(255, 107, 0, 0.35);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .add-btn:hover { filter: brightness(1.1); box-shadow: 0 4px 14px rgba(255, 107, 0, 0.4); }
-    .add-btn.crash-btn { background: linear-gradient(135deg, #ef4444, #dc2626); font-weight: 800; }
+    .add-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(255, 107, 0, 0.5);
+      filter: brightness(1.08);
+    }
+    .add-btn:active { transform: translateY(0); }
+    
+    .add-btn.crash-btn {
+      background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+      font-weight: 900;
+      box-shadow: 0 8px 25px rgba(255, 65, 108, 0.5);
+      animation: crashButtonPulse 1s infinite alternate;
+    }
+
+    @keyframes crashButtonPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.03); box-shadow: 0 12px 30px rgba(255, 65, 108, 0.7); }
+    }
 
     /* Cart Panel */
     .cart-panel {
-      background: var(--bg-glass);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 2px solid #cbd5e1;
+      border-radius: 24px;
+      padding: 28px;
       display: flex; flex-direction: column;
       height: calc(100vh - 140px);
       position: sticky; top: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
-    .cart-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; display: flex; justify-content: space-between; }
-    .cart-items { flex: 1; overflow-y: auto; margin-bottom: 16px; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+    .cart-title { font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
+    .cart-items { flex: 1; overflow-y: auto; margin-bottom: 20px; padding-right: 4px; }
+    
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px; border-radius: 16px; background: #ffffff; border: 1.5px solid #cbd5e1; margin-bottom: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
 
     .item-qty-btn {
-      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-color);
-      background: rgba(255,255,255,0.08); color: white; font-weight: bold; cursor: pointer;
+      width: 34px; height: 34px; border-radius: 12px; border: 1.5px solid #cbd5e1;
+      background: #f8fafc; color: #0f172a; font-weight: 900; font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
     }
-    .item-qty-btn:hover { background: rgba(255,255,255,0.2); }
+    .item-qty-btn:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border-color: #2563eb; }
 
-    .cart-summary { background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
-    .summary-total { font-size: 18px; font-weight: 700; color: #ffffff; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 8px; }
+    .cart-summary { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 18px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; color: #475569; font-weight: 700; }
+    .summary-total { font-size: 24px; font-weight: 900; color: #0f172a; border-top: 2px dashed #cbd5e1; padding-top: 14px; margin-top: 14px; }
 
     .checkout-btn {
-      width: 100%; padding: 16px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
+      width: 100%; padding: 20px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+      border: none; border-radius: 18px; color: white; font-size: 18px; font-weight: 900;
+      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .checkout-btn:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
-    .checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .checkout-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 35px rgba(16, 185, 129, 0.55);
+      filter: brightness(1.08);
+    }
+    .checkout-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    /* Modal Overlay */
+    /* Receipt Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center; z-index: 1000;
     }
     .receipt-modal {
-      background: #1e293b; border: 1px solid var(--border-color); border-radius: 20px;
-      width: 440px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      background: #ffffff; border: 2px solid #cbd5e1; border-radius: 26px;
+      width: 480px; padding: 36px; box-shadow: 0 30px 70px rgba(0,0,0,0.25);
     }
   </style>
 </head>
@@ -225,7 +308,7 @@
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 14px; font-weight: 500; opacity: 0.9;">All Juice Flavours Dropped to Absolute Floor Limit ₹18!</span>
+      <span style="font-size: 16px; font-weight: 700; opacity: 0.95;" id="marketCrashBannerMsg">All Juice Flavours Dropped to Absolute Floor Limit ₹18!</span>
     </div>
     <div class="crash-timer" id="crashTimerDisplay">03:00</div>
   </div>
@@ -236,21 +319,21 @@
         <div class="brand-icon">🍹</div>
         <div>
           <div class="brand-name">Juice Bar Stock Exchange</div>
-          <div style="font-size: 13px; color: var(--text-muted);">Real-Time Order Scarcity & Dynamic Price Engine Terminal</div>
+          <div style="font-size: 15px; color: #475569; font-weight: 700;">Real-Time Order Scarcity &amp; Dynamic Price Engine Terminal</div>
         </div>
       </div>
       <div>
-        <span style="font-size: 13px; padding: 6px 14px; background: rgba(16,185,129,0.15); color: #10b981; border-radius: 20px; border: 1px solid rgba(16,185,129,0.3);">
-          ● Bar Exchange Engine Active
+        <span style="font-size: 14px; font-weight: 900; padding: 10px 20px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border-radius: 24px; border: 1.5px solid #86efac; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+          🟢 LIVE EXCHANGE TRADING ACTIVE
         </span>
       </div>
     </header>
 
     <!-- Product Flavour Grid -->
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 20px; font-weight: 700;">Live Juice Menu &amp; Market Pricing</h2>
-        <span style="font-size: 12px; color: var(--text-muted);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+        <h2 style="font-size: 24px; font-weight: 900; color: #0f172a;">Live Juice Menu &amp; Market Pricing</h2>
+        <span style="font-size: 14px; font-weight: 800; color: #475569; background: #ffffff; padding: 8px 18px; border-radius: 14px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
       </div>
       <div class="flavour-grid" id="productGrid">
         <!-- Rendered dynamically -->
@@ -261,23 +344,23 @@
     <aside class="cart-panel">
       <div class="cart-title">
         <span>Order Cart</span>
-        <span style="font-size: 14px; color: var(--text-muted);" id="cartItemCount">0 items</span>
+        <span style="font-size: 14px; font-weight: 900; color: #2563eb; background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 6px 14px; border-radius: 14px; border: 1px solid #bfdbfe;" id="cartItemCount">0 cups</span>
       </div>
 
       <div class="cart-items" id="cartItemsContainer">
-        <div style="text-align: center; color: var(--text-muted); padding: 50px 0;">
-          🛒 Cart is empty.<br>Click "+ Add Cup" to select juice.
+        <div style="text-align: center; color: #64748b; padding: 60px 0; font-weight: 700;">
+          🛒 Cart is empty.<br>Click "+ Add Cup to Cart" to build order.
         </div>
       </div>
 
       <div class="cart-summary" id="cartSummaryBox" style="display: none;">
         <div class="summary-row">
           <span>Total Volume</span>
-          <span id="totalVolumeText">0 ml (0 cups)</span>
+          <span id="totalVolumeText" style="color: #0f172a; font-weight: 900;">0 ml (0 cups)</span>
         </div>
         <div class="summary-row" style="align-items: center;">
           <span>Payment Method</span>
-          <select id="paymentMethodSelect" style="background: #0f172a; color: white; border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">
+          <select id="paymentMethodSelect" style="background: #ffffff; color: #0f172a; border: 1.5px solid #cbd5e1; padding: 8px 14px; border-radius: 10px; font-weight: 800;">
             <option value="CASH">Cash Payment</option>
             <option value="UPI">UPI / QR Code</option>
             <option value="CARD">Debit / Credit Card</option>
@@ -285,7 +368,7 @@
         </div>
         <div class="summary-row summary-total">
           <span>Total Payable</span>
-          <span style="color: #10b981;" id="totalPayableText">₹0.00</span>
+          <span style="color: #059669;" id="totalPayableText">₹0.00</span>
         </div>
       </div>
 
@@ -298,28 +381,48 @@
   <!-- Receipt Modal -->
   <div class="modal-overlay" id="receiptModal" style="display: none;">
     <div class="receipt-modal">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div style="font-size: 44px; margin-bottom: 8px;">✅</div>
-        <h2 style="font-size: 22px; font-weight: 700; color: #10b981;">Order Completed</h2>
-        <p style="font-size: 13px; color: var(--text-muted);" id="modalOrderNumber">Invoice #ORD-1001</p>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="font-size: 52px; margin-bottom: 10px;">✅</div>
+        <h2 style="font-size: 26px; font-weight: 900; color: #059669;">Order Completed</h2>
+        <p style="font-size: 15px; color: #475569; font-weight: 700;" id="modalOrderNumber">Invoice #ORD-1001</p>
       </div>
 
-      <div style="background: rgba(15, 23, 42, 0.8); border: 1px dashed var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 20px;" id="modalItemsContainer">
+      <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;" id="modalItemsContainer">
         <!-- Rendered items -->
       </div>
 
-      <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 24px;">
-        Payment: <strong id="modalPaymentMethod">CASH</strong> &bull; Status: <span style="color: #10b981;">COMPLETED</span><br>
+      <div style="font-size: 14px; color: #475569; text-align: center; margin-bottom: 26px; font-weight: 700;">
+        Payment: <strong id="modalPaymentMethod" style="color: #0f172a;">CASH</strong> &bull; Status: <span style="color: #059669; font-weight: 900;">COMPLETED</span><br>
         Volume deducted atomically from 20L active container.
       </div>
 
-      <button onclick="closeReceiptModal()" style="width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 10px; color: white; font-weight: 600; font-size: 15px; cursor: pointer;">
+      <button onclick="closeReceiptModal()" style="width: 100%; padding: 18px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 17px; cursor: pointer; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);">
         Done / Next POS Order
       </button>
     </div>
   </div>
 
   <script>
+    const fruitIcons = {
+      1: '🥭',
+      2: '🍋',
+      3: '🌿',
+      4: '🍊',
+      5: '🍓',
+      6: '🍇',
+      7: '🍹'
+    };
+
+    const fruitCardClasses = {
+      1: 'card-mango',
+      2: 'card-lemon',
+      3: 'card-mint',
+      4: 'card-orange',
+      5: 'card-strawberry',
+      6: 'card-grape',
+      7: 'card-lychee'
+    };
+
     let products = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
@@ -335,7 +438,6 @@
     let crashRemainingSeconds = 0;
     let crashTimerInterval = null;
 
-    // Web Audio API Gong/Siren for Market Crash
     function playMarketCrashSiren() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -344,28 +446,21 @@
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(440, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
-        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 1.0);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-      } catch (e) {
-        console.log('Audio playback context ready');
-      }
+      } catch (e) { }
     }
 
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
-    marketChannel.onmessage = (event) => {
-      handleCrossPanelEvent(event.data);
-    };
+    marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
 
     window.addEventListener('storage', (e) => {
       if (e.key === 'pubexchange_event' && e.newValue) {
-        try {
-          handleCrossPanelEvent(JSON.parse(e.newValue));
-        } catch (err) {}
+        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
       }
     });
 
@@ -428,11 +523,8 @@
           if (payload.finalPrice) {
             const oldP = p.currentCupPrice;
             p.currentCupPrice = payload.finalPrice;
-            p.flashEffect = payload.finalPrice > oldP ? 'flash-up' : (payload.finalPrice < oldP ? 'flash-down' : '');
+            p.flashEffect = payload.finalPrice > oldP ? 'flash-surge' : (payload.finalPrice < oldP ? 'flash-discount' : '');
             setTimeout(() => { p.flashEffect = ''; }, 1500);
-          }
-          if (!isMarketCrashActive && p.minCupPrice && p.currentCupPrice < p.minCupPrice) {
-            p.currentCupPrice = p.minCupPrice;
           }
         }
       });
@@ -443,7 +535,6 @@
     async function checkMarketCrashStatus() {
       let isCrashActive = false;
       let remaining = 180;
-
       try {
         const res = await fetch('http://localhost:8088/api/pricing/market-crash/status');
         if (res.ok) {
@@ -473,12 +564,8 @@
       crashRemainingSeconds = seconds;
 
       const crashFloor = parseFloat(localStorage.getItem('pubexchange_market_crash_floor') || '18');
+      if (!wasActive) playMarketCrashSiren();
 
-      if (!wasActive) {
-        playMarketCrashSiren();
-      }
-
-      // Drop all prices to min floor price limit
       products.forEach(p => {
         p.currentCupPrice = p.minCupPrice || crashFloor;
         p.trendDirection = 'DOWN';
@@ -528,9 +615,7 @@
           const data = await res.json();
           if (data && data.length > 0) products = data;
         }
-      } catch (err) {
-        console.log('Bar stock exchange using initial seed data');
-      }
+      } catch (err) { }
 
       loadCustomProducts();
 
@@ -553,11 +638,12 @@
         const isUp = activePrice >= (p.basePrice || 20);
         const trendClass = isMarketCrashActive ? 'trend-down' : (isUp ? 'trend-up' : 'trend-down');
         const arrow = isMarketCrashActive ? '▼ [CRASH]' : (isUp ? '▲' : '▼');
+        const icon = fruitIcons[p.id] || '🍹';
         return `
           <div class="ticker-item">
-            <span>${p.flavour}:</span>
+            <span>${icon} ${p.flavour}:</span>
             <span class="${trendClass}">₹${activePrice} ${arrow}</span>
-            <span style="font-size: 11px; opacity: 0.7;">[Min: ₹${p.minCupPrice || 18}]</span>
+            <span style="font-size: 11px; color: #64748b;">[Min: ₹${p.minCupPrice || 18}]</span>
           </div>
         `;
       }).join(' &bull; ');
@@ -567,42 +653,52 @@
       const grid = document.getElementById('productGrid');
       grid.innerHTML = products.map(p => {
         const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
+        const icon = fruitIcons[p.id] || '🍹';
+        const cardClass = fruitCardClasses[p.id] || 'card-orange';
 
         let badgeClass = 'badge-normal';
-        let badgeText = '✨ Base Price';
+        let badgeText = '✨ Base Trading';
         if (isMarketCrashActive) {
           badgeClass = 'badge-crash';
           badgeText = '🚨 MARKET CRASH ₹18';
         } else if (activePrice >= 22) {
-          badgeClass = 'badge-high'; badgeText = '🔥 Scarcity Surge ▲';
+          badgeClass = 'badge-high'; badgeText = '🔥 Demand Surge ▲';
         } else if (activePrice <= 19) {
-          badgeClass = 'badge-low'; badgeText = '⚡ Discount Floor ▼';
+          badgeClass = 'badge-low'; badgeText = '⚡ Bargain Floor ▼';
         }
 
         const pctChange = (((activePrice - (p.basePrice || 20)) / (p.basePrice || 20)) * 100).toFixed(0);
         const pctText = isMarketCrashActive ? '-10% ▼ [CRASH]' : (pctChange >= 0 ? `+${pctChange}% ▲` : `${pctChange}% ▼`);
-        const pctColor = isMarketCrashActive ? '#ef4444' : (pctChange > 0 ? '#10b981' : (pctChange < 0 ? '#ef4444' : '#94a3b8'));
+        const pctColor = isMarketCrashActive ? '#dc2626' : (pctChange > 0 ? '#14532d' : (pctChange < 0 ? '#991b1b' : '#475569'));
+        const pctBg = isMarketCrashActive ? 'linear-gradient(135deg, #ffe4e6, #fecdd3)' : (pctChange > 0 ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)' : (pctChange < 0 ? 'linear-gradient(135deg, #ffe4e6, #fecdd3)' : '#f1f5f9'));
 
         return `
-          <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="flavour-card ${cardClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
               <span class="flavour-badge ${badgeClass}">${badgeText}</span>
-              <span style="font-size: 12px; font-weight: 700; color: ${pctColor}; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 6px;">${pctText}</span>
+              <span style="font-size: 12px; font-weight: 800; color: ${pctColor}; background: ${pctBg}; padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);">${pctText}</span>
             </div>
-            <div class="flavour-name">${p.name}</div>
+            
+            <div class="flavour-header">
+              <div class="flavour-icon">${icon}</div>
+              <div class="flavour-name">${p.name}</div>
+            </div>
+            
             <div class="flavour-desc">${p.description}</div>
-            <div class="price-row">
+            
+            <div class="price-box">
               <div>
-                <span class="price-tag" style="${isMarketCrashActive ? 'color: #facc15;' : ''}">₹${activePrice}</span>
-                <span style="font-size: 12px; color: var(--text-muted);"> / ${p.defaultCupSizeMl}ml</span>
+                <span class="price-tag">₹${activePrice}</span>
+                <span style="font-size: 13px; font-weight: 800; color: #64748b;"> / ${p.defaultCupSizeMl}ml</span>
               </div>
               <div style="text-align: right;">
-                <span style="font-size: 11px; color: var(--text-muted); display: block;">Base ₹${p.basePrice || 20}</span>
-                <span style="font-size: 11px; color: #10b981;">[₹${p.minCupPrice} - ₹${p.maxCupPrice}]</span>
+                <span style="font-size: 11px; font-weight: 800; color: #64748b; display: block;">Base ₹${p.basePrice || 20}</span>
+                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${p.minCupPrice} - ₹${p.maxCupPrice}]</span>
               </div>
             </div>
+
             <button class="add-btn ${isMarketCrashActive ? 'crash-btn' : ''}" onclick="addToCart(${p.id})">
-              ${isMarketCrashActive ? '🔥 RUSH BUY AT ₹18' : '+ Add Cup to Cart'}
+              ${isMarketCrashActive ? '🔥 RUSH BUY AT ₹18' : '🛒 + Add Cup to Cart'}
             </button>
           </div>
         `;
@@ -643,8 +739,8 @@
 
       if (cart.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 50px 0;">
-            🛒 Cart is empty.<br>Click "+ Add Cup" to select juice.
+          <div style="text-align: center; color: #64748b; padding: 60px 0; font-weight: 700;">
+            🛒 Cart is empty.<br>Click "+ Add Cup to Cart" to build order.
           </div>
         `;
         summaryBox.style.display = 'none';
@@ -653,17 +749,18 @@
       } else {
         container.innerHTML = cart.map((item, idx) => {
           const itemPrice = isMarketCrashActive ? (item.product.minCupPrice || 18) : item.product.currentCupPrice;
+          const icon = fruitIcons[item.product.id] || '🍹';
           return `
             <div class="cart-item">
               <div>
-                <div style="font-weight: 600;">${item.product.name}</div>
-                <div style="font-size: 12px; color: var(--text-muted);">
-                  ${item.cupSizeMl}ml &bull; ₹${itemPrice} / cup &bull; Vol: ${item.cupSizeMl * item.quantity}ml
+                <div style="font-weight: 900; color: #0f172a; font-size: 15px;">${icon} ${item.product.name}</div>
+                <div style="font-size: 13px; color: #475569; font-weight: 700; margin-top: 2px;">
+                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Total: ₹${(itemPrice * item.quantity).toFixed(2)}
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <button class="item-qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-                <span style="font-weight: 600; width: 20px; text-align: center;">${item.quantity}</span>
+                <span style="font-weight: 900; font-size: 16px; width: 24px; text-align: center; color: #0f172a;">${item.quantity}</span>
                 <button class="item-qty-btn" onclick="updateQty(${idx}, 1)">+</button>
               </div>
             </div>
@@ -684,7 +781,6 @@
       products.forEach(p => {
         const oldPrice = p.currentCupPrice;
         if (purchasedProductIds.has(p.id)) {
-          // Purchased item -> Price surges by +1 up to max ceiling
           if (p.currentCupPrice < p.maxCupPrice) {
             p.currentCupPrice += 1;
             p.trendDirection = 'UP';
@@ -692,14 +788,11 @@
             p.flashEffect = 'flash-surge';
           }
         } else {
-          // Unpurchased item -> Price decreases by -1 down to min floor
           if (p.currentCupPrice > p.minCupPrice) {
             p.currentCupPrice -= 1;
             p.trendDirection = 'DOWN';
             p.trend = '-₹1 ▼';
             p.flashEffect = 'flash-discount';
-          } else {
-            p.flashEffect = '';
           }
         }
       });
@@ -707,97 +800,88 @@
       renderProducts();
       renderTicker();
 
-      // Clear flash effects after animation completes
-      setTimeout(() => {
-        products.forEach(p => p.flashEffect = '');
-        renderProducts();
-      }, 1000);
+      const priceUpdates = products.map(p => ({
+        productId: p.id,
+        flavourName: p.name,
+        finalPrice: p.currentCupPrice
+      }));
+
+      try {
+        marketChannel.postMessage({ type: 'BATCH_PRODUCT_PRICE_UPDATED', payload: { products: priceUpdates } });
+        localStorage.setItem('pubexchange_event', JSON.stringify({ type: 'BATCH_PRODUCT_PRICE_UPDATED', payload: { products: priceUpdates }, timestamp: Date.now() }));
+      } catch (e) { }
     }
 
     async function processCheckout() {
       if (cart.length === 0) return;
-      const paymentMethod = document.getElementById('paymentMethodSelect').value;
-      const purchasedProductIds = new Set(cart.map(i => i.product.id));
 
-      const payload = {
-        items: cart.map(i => ({ productId: i.product.id, quantity: i.quantity, cupSizeMl: i.cupSizeMl })),
-        paymentMethod: paymentMethod
+      const paymentMethod = document.getElementById('paymentMethodSelect').value;
+      const totalAmount = cart.reduce((sum, i) => {
+        const p = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
+        return sum + (p * i.quantity);
+      }, 0);
+
+      const orderPayload = {
+        items: cart.map(i => ({
+          productId: i.product.id,
+          quantity: i.quantity,
+          unitPrice: isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice
+        })),
+        totalAmount,
+        paymentMethod
       };
 
+      let orderNumber = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+
       try {
-        const res = await fetch('http://localhost:8088/api/pos/checkout', {
+        const res = await fetch('http://localhost:8088/api/pos/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(orderPayload)
         });
-
-        let orderData;
         if (res.ok) {
-          orderData = await res.json();
-        } else {
-          throw new Error('Checkout API offline');
+          const data = await res.json();
+          if (data && data.orderNumber) orderNumber = data.orderNumber;
         }
-        applyBarStockExchangePriceShift(purchasedProductIds);
-        showReceipt(orderData);
-      } catch (err) {
-        // Local Bar Stock Exchange demand response
-        applyBarStockExchangePriceShift(purchasedProductIds);
+      } catch (err) { }
 
-        const totalPayable = cart.reduce((sum, i) => sum + (i.product.currentCupPrice * i.quantity), 0);
-        const orderData = {
-          orderNumber: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
-          totalAmount: totalPayable,
-          paymentMethod: paymentMethod,
-          items: cart.map(i => ({
-            productName: i.product.name,
-            quantity: i.quantity,
-            cupSizeMl: i.cupSizeMl,
-            unitPrice: i.product.currentCupPrice,
-            totalPrice: i.product.currentCupPrice * i.quantity,
-            volumeDeductedMl: i.cupSizeMl * i.quantity
-          }))
-        };
-        showReceipt(orderData);
-      }
-    }
+      const purchasedIds = new Set(cart.map(i => i.product.id));
 
-    function showReceipt(order) {
-      document.getElementById('modalOrderNumber').textContent = `Invoice #${order.orderNumber}`;
-      document.getElementById('modalPaymentMethod').textContent = order.paymentMethod;
-
-      const container = document.getElementById('modalItemsContainer');
-      container.innerHTML = order.items.map(item => `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
-          <div>
-            <div style="font-weight: 600;">${item.productName}</div>
-            <div style="font-size: 12px; color: var(--text-muted);">
-              ${item.quantity} x ${item.cupSizeMl}ml cup (${item.volumeDeductedMl}ml volume)
-            </div>
+      const modalItemsHtml = cart.map(i => {
+        const itemPrice = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
+        const icon = fruitIcons[i.product.id] || '🍹';
+        return `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a;">
+            <span>${icon} ${i.product.name} x ${i.quantity} (${i.cupSizeMl * i.quantity}ml)</span>
+            <span style="color: #059669;">₹${(itemPrice * i.quantity).toFixed(2)}</span>
           </div>
-          <div style="font-weight: 600;">₹${item.totalPrice}</div>
-        </div>
-      `).join('') + `
-        <div style="border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; font-weight: 700; font-size: 16px;">
-          <span>Total Paid</span>
-          <span style="color: #10b981;">₹${order.totalAmount}</span>
+        `;
+      }).join('');
+
+      document.getElementById('modalOrderNumber').textContent = `Receipt #${orderNumber}`;
+      document.getElementById('modalItemsContainer').innerHTML = modalItemsHtml + `
+        <div style="border-top: 2px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; color: #0f172a;">
+          <span>TOTAL PAID</span>
+          <span style="color: #059669;">₹${totalAmount.toFixed(2)}</span>
         </div>
       `;
+      document.getElementById('modalPaymentMethod').textContent = paymentMethod;
 
       document.getElementById('receiptModal').style.display = 'flex';
+
+      applyBarStockExchangePriceShift(purchasedIds);
+
       cart = [];
       renderCart();
-      renderProducts();
-      renderTicker();
     }
 
     function closeReceiptModal() {
       document.getElementById('receiptModal').style.display = 'none';
     }
 
-    setInterval(checkMarketCrashStatus, 1000);
-    checkMarketCrashStatus();
-    loadCustomProducts();
     fetchProducts();
+    checkMarketCrashStatus();
+    setInterval(checkMarketCrashStatus, 3000);
   </script>
 </body>
 </html>
