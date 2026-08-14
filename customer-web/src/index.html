@@ -647,8 +647,23 @@
       renderTicker();
     }
 
+    const defaultProducts = [
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'DOWN' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' }
+    ];
+
     function renderTicker() {
+      if (!products || products.length === 0) {
+        products = JSON.parse(JSON.stringify(defaultProducts));
+        loadCustomProducts();
+      }
       const container = document.getElementById('stockTickerContent');
+      if (!container) return;
       container.innerHTML = products.map(p => {
         const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
         const isUp = activePrice >= (p.basePrice || 20);
@@ -666,7 +681,12 @@
     }
 
     function renderProducts() {
+      if (!products || products.length === 0) {
+        products = JSON.parse(JSON.stringify(defaultProducts));
+        loadCustomProducts();
+      }
       const grid = document.getElementById('productGrid');
+      if (!grid) return;
       grid.innerHTML = products.map(p => {
         const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
         const icon = fruitIcons[p.id] || '🍹';
