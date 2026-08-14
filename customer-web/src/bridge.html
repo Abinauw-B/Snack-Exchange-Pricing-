@@ -8,6 +8,15 @@
   <script>
     const bc = new BroadcastChannel('pubexchange_market_channel');
 
+    // 1. Forward events from Port 8000 BroadcastChannel to Admin Panel (Port 8001 parent window)
+    bc.onmessage = (event) => {
+      if (!event.data) return;
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(event.data, '*');
+      }
+    };
+
+    // 2. Handle postMessages sent down from Admin Panel into this iframe
     window.addEventListener('message', (event) => {
       if (!event.data || !event.data.type) return;
 
@@ -55,6 +64,18 @@
 
       // Broadcast on port 8000 origin channel
       bc.postMessage({ type, payload });
+    });
+
+    // 3. Listen to Port 8000 storage events and notify parent Admin Panel
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_pos_order' && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'POS_ORDER_COMPLETED', payload }, '*');
+          }
+        } catch (err) {}
+      }
     });
   </script>
 </body>
