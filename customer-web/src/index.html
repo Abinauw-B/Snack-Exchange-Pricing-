@@ -885,6 +885,26 @@
 
       document.getElementById('receiptModal').style.display = 'flex';
 
+      const orderPayload = {
+        orderNumber,
+        totalAmount,
+        cupsCount: totalCups,
+        totalVolumeMl,
+        cartItems: cart.map(i => ({
+          productId: i.product.id,
+          name: i.product.name,
+          quantity: i.quantity,
+          volumeMl: i.cupSizeMl * i.quantity
+        }))
+      };
+
+      try {
+        marketChannel.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload });
+        localStorage.setItem('pubexchange_pos_order', JSON.stringify({ ...orderPayload, timestamp: Date.now() }));
+        if (window.opener) window.opener.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload }, '*');
+        if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderPayload }, '*');
+      } catch (err) {}
+
       applyBarStockExchangePriceShift(purchasedIds);
 
       cart = [];

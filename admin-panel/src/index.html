@@ -1042,17 +1042,66 @@
     let revenueChartInstance = null;
     let donutChartInstance = null;
 
+    let totalRevenueSum = 3840.00;
+    let totalCupsSum = 192;
+
+    function handlePosOrderCompleted(payload) {
+      if (!payload) return;
+
+      if (payload.totalAmount) totalRevenueSum += parseFloat(payload.totalAmount);
+      if (payload.cupsCount) totalCupsSum += parseInt(payload.cupsCount);
+
+      const revElem = document.getElementById('dashRevenue');
+      const cupsElem = document.getElementById('dashCups');
+      if (revElem) revElem.textContent = `₹${totalRevenueSum.toFixed(2)}`;
+      if (cupsElem) cupsElem.textContent = `${totalCupsSum} cups`;
+
+      if (payload.cartItems && Array.isArray(payload.cartItems)) {
+        payload.cartItems.forEach(item => {
+          const batch = batchesData.find(b => b.productId === item.productId || (flavoursMap[b.productId] && flavoursMap[b.productId].toLowerCase() === item.name.toLowerCase()));
+          if (batch) {
+            batch.remainingVolumeMl = Math.max(0, (batch.remainingVolumeMl || 20000) - (item.volumeMl || 250));
+          }
+        });
+      }
+
+      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      auditData.unshift({
+        id: auditData.length + 1,
+        timestamp: nowStr,
+        user: 'pos_terminal_1',
+        module: 'SALES_POS',
+        action: 'CHECKOUT_SUCCESS',
+        details: `Order #${payload.orderNumber || 'ORD-SYNC'}: ${payload.cupsCount || 1} cups (₹${parseFloat(payload.totalAmount || 0).toFixed(2)})`
+      });
+
+      renderDashboardBatches();
+      renderBatchesTable();
+      renderCharts();
+      if (typeof renderAuditLogs === 'function') renderAuditLogs();
+      showToast(`🛒 Live POS Order #${payload.orderNumber || ''} Received: ₹${parseFloat(payload.totalAmount || 0).toFixed(2)} (${payload.cupsCount || 1} cups)`, 'success');
+    }
+
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
     marketChannel.onmessage = (event) => {
-      if (event.data?.type === 'BATCH_PRODUCT_PRICE_UPDATED' || event.data?.type === 'POS_ORDER_COMPLETED') {
+      if (event.data?.type === 'POS_ORDER_COMPLETED') {
+        handlePosOrderCompleted(event.data.payload);
+      } else {
         loadBatches();
         renderCharts();
-        showToast('🔄 Real-Time POS Sync: Order volume & prices updated!', 'success');
       }
     };
 
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'POS_ORDER_COMPLETED') {
+        handlePosOrderCompleted(event.data.payload);
+      }
+    });
+
     window.addEventListener('storage', (e) => {
-      if (e.key === 'pubexchange_event' && e.newValue) {
+      if (e.key === 'pubexchange_pos_order' && e.newValue) {
+        try { handlePosOrderCompleted(JSON.parse(e.newValue)); } catch (err) {}
+      } else if (e.key === 'pubexchange_event' && e.newValue) {
         loadBatches();
         renderCharts();
       }
