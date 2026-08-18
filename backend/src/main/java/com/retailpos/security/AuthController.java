@@ -1,10 +1,9 @@
 package com.retailpos.security;
 
+import com.retailpos.domain.Role;
 import com.retailpos.domain.User;
 import com.retailpos.domain.UserRepository;
 import com.retailpos.domain.RoleRepository;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -24,16 +22,41 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    @Data
+    public AuthController(UserRepository userRepository, RoleRepository roleRepository, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     public static class LoginRequest {
         private String username;
         private String password;
+
+        public LoginRequest() {}
+        public LoginRequest(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
     }
 
-    @Data
     public static class ChangePasswordRequest {
         private String oldPassword;
         private String newPassword;
+
+        public ChangePasswordRequest() {}
+        public ChangePasswordRequest(String oldPassword, String newPassword) {
+            this.oldPassword = oldPassword;
+            this.newPassword = newPassword;
+        }
+        public String getOldPassword() { return oldPassword; }
+        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
     }
 
     @PostMapping("/login")

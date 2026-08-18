@@ -1,8 +1,6 @@
 package com.retailpos.inventory;
 
 import com.retailpos.domain.JuiceBatch;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +9,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/batches")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class JuiceBatchController {
 
     private final JuiceBatchService juiceBatchService;
+
+    public JuiceBatchController(JuiceBatchService juiceBatchService) {
+        this.juiceBatchService = juiceBatchService;
+    }
 
     @GetMapping
     public ResponseEntity<List<JuiceBatch>> getAllBatches() {
@@ -26,10 +27,20 @@ public class JuiceBatchController {
         return ResponseEntity.ok(juiceBatchService.getActiveBatches());
     }
 
-    @Data
     public static class CreateBatchRequest {
         private Long productId;
-        private Integer containerCapacityMl; // Defaults to 20,000ml (20L)
+        private Integer containerCapacityMl;
+
+        public CreateBatchRequest() {}
+        public CreateBatchRequest(Long productId, Integer containerCapacityMl) {
+            this.productId = productId;
+            this.containerCapacityMl = containerCapacityMl;
+        }
+
+        public Long getProductId() { return productId; }
+        public void setProductId(Long productId) { this.productId = productId; }
+        public Integer getContainerCapacityMl() { return containerCapacityMl; }
+        public void setContainerCapacityMl(Integer containerCapacityMl) { this.containerCapacityMl = containerCapacityMl; }
     }
 
     @PostMapping

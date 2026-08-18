@@ -1,9 +1,9 @@
 package com.retailpos.report;
 
+import com.retailpos.domain.JuiceBatch;
 import com.retailpos.domain.SalesOrderRepository;
 import com.retailpos.domain.ProductRepository;
-import com.retailpos.inventory.JuiceBatchRepository;
-import lombok.RequiredArgsConstructor;
+import com.retailpos.domain.JuiceBatchRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +14,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reports")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class ReportController {
 
     private final SalesOrderRepository salesOrderRepository;
     private final ProductRepository productRepository;
     private final JuiceBatchRepository juiceBatchRepository;
 
+    public ReportController(SalesOrderRepository salesOrderRepository, ProductRepository productRepository, JuiceBatchRepository juiceBatchRepository) {
+        this.salesOrderRepository = salesOrderRepository;
+        this.productRepository = productRepository;
+        this.juiceBatchRepository = juiceBatchRepository;
+    }
+
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getSummaryReport() {
         Map<String, Object> report = new HashMap<>();
 
         long totalOrders = salesOrderRepository.count();
-        long activeBatches = juiceBatchRepository.findByStatus("ACTIVE").size();
+        long activeBatches = juiceBatchRepository.findByStatus(JuiceBatch.BatchStatus.ACTIVE).size();
 
         report.put("totalOrders", totalOrders);
         report.put("activeBatches", activeBatches);

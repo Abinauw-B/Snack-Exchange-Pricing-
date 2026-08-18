@@ -2,16 +2,18 @@ package com.retailpos.pricing;
 
 import com.retailpos.domain.JuiceBatch;
 import com.retailpos.domain.JuiceBatchRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class StockPressureService {
 
     private final JuiceBatchRepository juiceBatchRepository;
+
+    public StockPressureService(JuiceBatchRepository juiceBatchRepository) {
+        this.juiceBatchRepository = juiceBatchRepository;
+    }
 
     public enum PressureLevel {
         LOW, NORMAL, HIGH, VERY_HIGH

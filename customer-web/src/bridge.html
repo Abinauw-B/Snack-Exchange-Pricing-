@@ -49,6 +49,29 @@
           if (payload.finalPrice) cp.currentCupPrice = payload.finalPrice;
           localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
         }
+
+        const dynamicProds = JSON.parse(localStorage.getItem('pubexchange_dynamic_products') || '[]');
+        let dp = dynamicProds.find(p => p.id === payload.productId || (p.name && payload.flavourName && p.name.toLowerCase() === payload.flavourName.toLowerCase()));
+        if (dp) {
+          if (payload.finalPrice) dp.currentCupPrice = payload.finalPrice;
+          if (payload.startPrice) dp.basePrice = payload.startPrice;
+          if (payload.minPrice) dp.minCupPrice = payload.minPrice;
+          if (payload.maxPrice) dp.maxCupPrice = payload.maxPrice;
+        } else if (payload.productId || payload.flavourName) {
+          dynamicProds.push({
+            id: payload.productId || Date.now(),
+            name: payload.flavourName || 'Juice Flavour',
+            currentCupPrice: payload.finalPrice || payload.startPrice || 20,
+            basePrice: payload.startPrice || 20,
+            minCupPrice: payload.minPrice || 18,
+            maxCupPrice: payload.maxPrice || 25
+          });
+        }
+        localStorage.setItem('pubexchange_dynamic_products', JSON.stringify(dynamicProds));
+      }
+
+      if (type === 'BATCH_PRODUCT_PRICE_UPDATED' && payload?.products) {
+        localStorage.setItem('pubexchange_dynamic_products', JSON.stringify(payload.products));
       }
 
       if (type === 'MARKET_CRASH_TRIGGER' && payload?.floorPrice) {

@@ -52,6 +52,12 @@ public class JuiceInventoryAndPricingTests {
     private PricingSimulationService pricingSimulationService;
 
     @Autowired
+    private PricingEngineService pricingEngineService;
+
+    @Autowired
+    private MarketCrashService marketCrashService;
+
+    @Autowired
     private SystemConfigRepository systemConfigRepository;
 
     private Product mangoProduct;
@@ -260,5 +266,33 @@ public class JuiceInventoryAndPricingTests {
 
         SystemConfig updated = systemConfigRepository.findById("cooldown_minutes").orElseThrow();
         assertEquals("15", updated.getConfigValue());
+    }
+
+    @Test
+    @DisplayName("Req 17: 60-Second Automated Pricing Engine Cycle Execution")
+    @Transactional
+    void testPricingEngine60SecondCycleExecution() {
+        PricingEngineService.PriceEvaluationCycleResult result = pricingEngineService.execute60SecondPricingEngine();
+        assertNotNull(result);
+        assertNotNull(result.getTimestamp());
+        assertTrue(result.getEvaluatedProductsCount() >= 0);
+        assertEquals("TRADING_NORMAL", result.getMarketStatus());
+    }
+
+    @Test
+    @DisplayName("Req 18: Market Crash Override halts standard engine and sets status")
+    @Transactional
+    void testMarketCrashOverride() {
+        try {
+            marketCrashService.triggerMarketCrash(3, "TEST");
+            assertTrue(marketCrashService.isCrashActive());
+
+            PricingEngineService.PriceEvaluationCycleResult crashResult = pricingEngineService.execute60SecondPricingEngine();
+            assertEquals("MARKET_CRASH_ACTIVE", crashResult.getMarketStatus());
+            assertEquals(0, crashResult.getEvaluatedProductsCount());
+        } finally {
+            marketCrashService.stopMarketCrash();
+            assertFalse(marketCrashService.isCrashActive());
+        }
     }
 }

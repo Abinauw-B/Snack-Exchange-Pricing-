@@ -2,16 +2,10 @@ package com.retailpos.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "sales_order_items")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class SalesOrderItem {
 
     @Id
@@ -43,4 +37,65 @@ public class SalesOrderItem {
 
     @Column(name = "volume_deducted_ml", nullable = false)
     private Integer volumeDeductedMl;
+
+    public SalesOrderItem() {}
+
+    public SalesOrderItem(Long id, SalesOrder salesOrder, Long productId, String productName, Integer cupSizeMl, BigDecimal unitPrice, Integer quantity, BigDecimal totalPrice, Integer volumeDeductedMl) {
+        this.id = id;
+        this.salesOrder = salesOrder;
+        this.productId = productId;
+        this.productName = productName;
+        this.cupSizeMl = cupSizeMl;
+        this.unitPrice = unitPrice;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+        this.volumeDeductedMl = volumeDeductedMl;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public SalesOrder getSalesOrder() { return salesOrder; }
+    public void setSalesOrder(SalesOrder salesOrder) { this.salesOrder = salesOrder; }
+    public Long getProductId() { return productId; }
+    public void setProductId(Long productId) { this.productId = productId; }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+    public Integer getCupSizeMl() { return cupSizeMl; }
+    public void setCupSizeMl(Integer cupSizeMl) { this.cupSizeMl = cupSizeMl; }
+    public BigDecimal getUnitPrice() { return unitPrice; }
+    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+    public Integer getVolumeDeductedMl() { return volumeDeductedMl; }
+    public void setVolumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; }
+
+    public static SalesOrderItemBuilder builder() { return new SalesOrderItemBuilder(); }
+
+    public static class SalesOrderItemBuilder {
+        private Long id;
+        private SalesOrder salesOrder;
+        private Long productId;
+        private String productName;
+        private Integer cupSizeMl;
+        private BigDecimal unitPrice;
+        private Integer quantity;
+        private BigDecimal totalPrice;
+        private Integer volumeDeductedMl;
+
+        public SalesOrderItemBuilder id(Long id) { this.id = id; return this; }
+        public SalesOrderItemBuilder salesOrder(SalesOrder salesOrder) { this.salesOrder = salesOrder; return this; }
+        public SalesOrderItemBuilder productId(Long productId) { this.productId = productId; return this; }
+        public SalesOrderItemBuilder productName(String productName) { this.productName = productName; return this; }
+        public SalesOrderItemBuilder cupSizeMl(Integer cupSizeMl) { this.cupSizeMl = cupSizeMl; return this; }
+        public SalesOrderItemBuilder unitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; return this; }
+        public SalesOrderItemBuilder quantity(Integer quantity) { this.quantity = quantity; return this; }
+        public SalesOrderItemBuilder totalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; return this; }
+        public SalesOrderItemBuilder volumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; return this; }
+
+        public SalesOrderItem build() {
+            return new SalesOrderItem(id, salesOrder, productId, productName, cupSizeMl, unitPrice, quantity, totalPrice, volumeDeductedMl);
+        }
+    }
 }

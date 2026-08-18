@@ -1,9 +1,6 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +11,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class PriceAdjustmentService {
 
     private final ProductRepository productRepository;
@@ -25,8 +21,16 @@ public class PriceAdjustmentService {
     private final TimeFactorService timeFactorService;
     private final MarketCrashService marketCrashService;
 
-    @Data
-    @Builder
+    public PriceAdjustmentService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, DemandCalculationService demandCalculationService, StockPressureService stockPressureService, TimeFactorService timeFactorService, MarketCrashService marketCrashService) {
+        this.productRepository = productRepository;
+        this.priceHistoryRepository = priceHistoryRepository;
+        this.systemConfigRepository = systemConfigRepository;
+        this.demandCalculationService = demandCalculationService;
+        this.stockPressureService = stockPressureService;
+        this.timeFactorService = timeFactorService;
+        this.marketCrashService = marketCrashService;
+    }
+
     public static class PriceEvaluationResult {
         private Long productId;
         private String flavour;
@@ -38,6 +42,67 @@ public class PriceAdjustmentService {
         private double timeFactorMultiplier;
         private String explanation;
         private String statusReason;
+
+        public PriceEvaluationResult() {}
+        public PriceEvaluationResult(Long productId, String flavour, BigDecimal oldPrice, BigDecimal newPrice, boolean priceChanged, double demandScore, double stockPressurePct, double timeFactorMultiplier, String explanation, String statusReason) {
+            this.productId = productId;
+            this.flavour = flavour;
+            this.oldPrice = oldPrice;
+            this.newPrice = newPrice;
+            this.priceChanged = priceChanged;
+            this.demandScore = demandScore;
+            this.stockPressurePct = stockPressurePct;
+            this.timeFactorMultiplier = timeFactorMultiplier;
+            this.explanation = explanation;
+            this.statusReason = statusReason;
+        }
+
+        public Long getProductId() { return productId; }
+        public void setProductId(Long productId) { this.productId = productId; }
+        public String getFlavour() { return flavour; }
+        public void setFlavour(String flavour) { this.flavour = flavour; }
+        public BigDecimal getOldPrice() { return oldPrice; }
+        public void setOldPrice(BigDecimal oldPrice) { this.oldPrice = oldPrice; }
+        public BigDecimal getNewPrice() { return newPrice; }
+        public void setNewPrice(BigDecimal newPrice) { this.newPrice = newPrice; }
+        public boolean isPriceChanged() { return priceChanged; }
+        public void setPriceChanged(boolean priceChanged) { this.priceChanged = priceChanged; }
+        public double getDemandScore() { return demandScore; }
+        public void setDemandScore(double demandScore) { this.demandScore = demandScore; }
+        public double getStockPressurePct() { return stockPressurePct; }
+        public void setStockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; }
+        public double getTimeFactorMultiplier() { return timeFactorMultiplier; }
+        public void setTimeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; }
+        public String getExplanation() { return explanation; }
+        public void setExplanation(String explanation) { this.explanation = explanation; }
+        public String getStatusReason() { return statusReason; }
+        public void setStatusReason(String statusReason) { this.statusReason = statusReason; }
+
+        public static PriceEvaluationResultBuilder builder() { return new PriceEvaluationResultBuilder(); }
+        public static class PriceEvaluationResultBuilder {
+            private Long productId;
+            private String flavour;
+            private BigDecimal oldPrice;
+            private BigDecimal newPrice;
+            private boolean priceChanged;
+            private double demandScore;
+            private double stockPressurePct;
+            private double timeFactorMultiplier;
+            private String explanation;
+            private String statusReason;
+
+            public PriceEvaluationResultBuilder productId(Long productId) { this.productId = productId; return this; }
+            public PriceEvaluationResultBuilder flavour(String flavour) { this.flavour = flavour; return this; }
+            public PriceEvaluationResultBuilder oldPrice(BigDecimal oldPrice) { this.oldPrice = oldPrice; return this; }
+            public PriceEvaluationResultBuilder newPrice(BigDecimal newPrice) { this.newPrice = newPrice; return this; }
+            public PriceEvaluationResultBuilder priceChanged(boolean priceChanged) { this.priceChanged = priceChanged; return this; }
+            public PriceEvaluationResultBuilder demandScore(double demandScore) { this.demandScore = demandScore; return this; }
+            public PriceEvaluationResultBuilder stockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; return this; }
+            public PriceEvaluationResultBuilder timeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; return this; }
+            public PriceEvaluationResultBuilder explanation(String explanation) { this.explanation = explanation; return this; }
+            public PriceEvaluationResultBuilder statusReason(String statusReason) { this.statusReason = statusReason; return this; }
+            public PriceEvaluationResult build() { return new PriceEvaluationResult(productId, flavour, oldPrice, newPrice, priceChanged, demandScore, stockPressurePct, timeFactorMultiplier, explanation, statusReason); }
+        }
     }
 
     @Transactional

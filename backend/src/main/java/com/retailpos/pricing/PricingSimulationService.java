@@ -1,7 +1,5 @@
 package com.retailpos.pricing;
 
-import lombok.Builder;
-import lombok.Data;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,7 +10,6 @@ import java.util.List;
 @Service
 public class PricingSimulationService {
 
-    @Data
     public static class SimulationRequest {
         private String flavourName = "Mango Juice";
         private Integer initialVolumeMl = 20000;
@@ -22,14 +19,39 @@ public class PricingSimulationService {
         private Integer totalSimulatedPurchases = 40;
         private Integer cupsPerInterval = 4;
         private Integer intervalMinutes = 5;
-        private String startTimeStr = "12:00"; // HH:mm format
+        private String startTimeStr = "12:00";
         private Double weightVelocity = 0.40;
         private Double weightStockPressure = 0.40;
         private Double weightTimeFactor = 0.20;
+
+        public SimulationRequest() {}
+
+        public String getFlavourName() { return flavourName; }
+        public void setFlavourName(String flavourName) { this.flavourName = flavourName; }
+        public Integer getInitialVolumeMl() { return initialVolumeMl; }
+        public void setInitialVolumeMl(Integer initialVolumeMl) { this.initialVolumeMl = initialVolumeMl; }
+        public BigDecimal getInitialPrice() { return initialPrice; }
+        public void setInitialPrice(BigDecimal initialPrice) { this.initialPrice = initialPrice; }
+        public BigDecimal getMinPrice() { return minPrice; }
+        public void setMinPrice(BigDecimal minPrice) { this.minPrice = minPrice; }
+        public BigDecimal getMaxPrice() { return maxPrice; }
+        public void setMaxPrice(BigDecimal maxPrice) { this.maxPrice = maxPrice; }
+        public Integer getTotalSimulatedPurchases() { return totalSimulatedPurchases; }
+        public void setTotalSimulatedPurchases(Integer totalSimulatedPurchases) { this.totalSimulatedPurchases = totalSimulatedPurchases; }
+        public Integer getCupsPerInterval() { return cupsPerInterval; }
+        public void setCupsPerInterval(Integer cupsPerInterval) { this.cupsPerInterval = cupsPerInterval; }
+        public Integer getIntervalMinutes() { return intervalMinutes; }
+        public void setIntervalMinutes(Integer intervalMinutes) { this.intervalMinutes = intervalMinutes; }
+        public String getStartTimeStr() { return startTimeStr; }
+        public void setStartTimeStr(String startTimeStr) { this.startTimeStr = startTimeStr; }
+        public Double getWeightVelocity() { return weightVelocity; }
+        public void setWeightVelocity(Double weightVelocity) { this.weightVelocity = weightVelocity; }
+        public Double getWeightStockPressure() { return weightStockPressure; }
+        public void setWeightStockPressure(Double weightStockPressure) { this.weightStockPressure = weightStockPressure; }
+        public Double getWeightTimeFactor() { return weightTimeFactor; }
+        public void setWeightTimeFactor(Double weightTimeFactor) { this.weightTimeFactor = weightTimeFactor; }
     }
 
-    @Data
-    @Builder
     public static class SimulationStep {
         private int stepIndex;
         private String timeStr;
@@ -42,12 +64,86 @@ public class PricingSimulationService {
         private double timeFactorMultiplier;
         private double demandScore;
         private BigDecimal price;
-        private String priceMovement; // "+₹1", "-₹1", "UNCHANGED"
+        private String priceMovement;
         private String explanation;
+
+        public SimulationStep() {}
+        public SimulationStep(int stepIndex, String timeStr, int remainingVolumeMl, int estimatedRemainingCups, int cupsSoldThisStep, int cumulativeCupsSold, double velocityScore, double stockPressurePct, double timeFactorMultiplier, double demandScore, BigDecimal price, String priceMovement, String explanation) {
+            this.stepIndex = stepIndex;
+            this.timeStr = timeStr;
+            this.remainingVolumeMl = remainingVolumeMl;
+            this.estimatedRemainingCups = estimatedRemainingCups;
+            this.cupsSoldThisStep = cupsSoldThisStep;
+            this.cumulativeCupsSold = cumulativeCupsSold;
+            this.velocityScore = velocityScore;
+            this.stockPressurePct = stockPressurePct;
+            this.timeFactorMultiplier = timeFactorMultiplier;
+            this.demandScore = demandScore;
+            this.price = price;
+            this.priceMovement = priceMovement;
+            this.explanation = explanation;
+        }
+
+        public int getStepIndex() { return stepIndex; }
+        public void setStepIndex(int stepIndex) { this.stepIndex = stepIndex; }
+        public String getTimeStr() { return timeStr; }
+        public void setTimeStr(String timeStr) { this.timeStr = timeStr; }
+        public int getRemainingVolumeMl() { return remainingVolumeMl; }
+        public void setRemainingVolumeMl(int remainingVolumeMl) { this.remainingVolumeMl = remainingVolumeMl; }
+        public int getEstimatedRemainingCups() { return estimatedRemainingCups; }
+        public void setEstimatedRemainingCups(int estimatedRemainingCups) { this.estimatedRemainingCups = estimatedRemainingCups; }
+        public int getCupsSoldThisStep() { return cupsSoldThisStep; }
+        public void setCupsSoldThisStep(int cupsSoldThisStep) { this.cupsSoldThisStep = cupsSoldThisStep; }
+        public int getCumulativeCupsSold() { return cumulativeCupsSold; }
+        public void setCumulativeCupsSold(int cumulativeCupsSold) { this.cumulativeCupsSold = cumulativeCupsSold; }
+        public double getVelocityScore() { return velocityScore; }
+        public void setVelocityScore(double velocityScore) { this.velocityScore = velocityScore; }
+        public double getStockPressurePct() { return stockPressurePct; }
+        public void setStockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; }
+        public double getTimeFactorMultiplier() { return timeFactorMultiplier; }
+        public void setTimeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; }
+        public double getDemandScore() { return demandScore; }
+        public void setDemandScore(double demandScore) { this.demandScore = demandScore; }
+        public BigDecimal getPrice() { return price; }
+        public void setPrice(BigDecimal price) { this.price = price; }
+        public String getPriceMovement() { return priceMovement; }
+        public void setPriceMovement(String priceMovement) { this.priceMovement = priceMovement; }
+        public String getExplanation() { return explanation; }
+        public void setExplanation(String explanation) { this.explanation = explanation; }
+
+        public static SimulationStepBuilder builder() { return new SimulationStepBuilder(); }
+        public static class SimulationStepBuilder {
+            private int stepIndex;
+            private String timeStr;
+            private int remainingVolumeMl;
+            private int estimatedRemainingCups;
+            private int cupsSoldThisStep;
+            private int cumulativeCupsSold;
+            private double velocityScore;
+            private double stockPressurePct;
+            private double timeFactorMultiplier;
+            private double demandScore;
+            private BigDecimal price;
+            private String priceMovement;
+            private String explanation;
+
+            public SimulationStepBuilder stepIndex(int stepIndex) { this.stepIndex = stepIndex; return this; }
+            public SimulationStepBuilder timeStr(String timeStr) { this.timeStr = timeStr; return this; }
+            public SimulationStepBuilder remainingVolumeMl(int remainingVolumeMl) { this.remainingVolumeMl = remainingVolumeMl; return this; }
+            public SimulationStepBuilder estimatedRemainingCups(int estimatedRemainingCups) { this.estimatedRemainingCups = estimatedRemainingCups; return this; }
+            public SimulationStepBuilder cupsSoldThisStep(int cupsSoldThisStep) { this.cupsSoldThisStep = cupsSoldThisStep; return this; }
+            public SimulationStepBuilder cumulativeCupsSold(int cumulativeCupsSold) { this.cumulativeCupsSold = cumulativeCupsSold; return this; }
+            public SimulationStepBuilder velocityScore(double velocityScore) { this.velocityScore = velocityScore; return this; }
+            public SimulationStepBuilder stockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; return this; }
+            public SimulationStepBuilder timeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; return this; }
+            public SimulationStepBuilder demandScore(double demandScore) { this.demandScore = demandScore; return this; }
+            public SimulationStepBuilder price(BigDecimal price) { this.price = price; return this; }
+            public SimulationStepBuilder priceMovement(String priceMovement) { this.priceMovement = priceMovement; return this; }
+            public SimulationStepBuilder explanation(String explanation) { this.explanation = explanation; return this; }
+            public SimulationStep build() { return new SimulationStep(stepIndex, timeStr, remainingVolumeMl, estimatedRemainingCups, cupsSoldThisStep, cumulativeCupsSold, velocityScore, stockPressurePct, timeFactorMultiplier, demandScore, price, priceMovement, explanation); }
+        }
     }
 
-    @Data
-    @Builder
     public static class SimulationResponse {
         private String flavourName;
         private int initialVolumeMl;
@@ -56,6 +152,52 @@ public class PricingSimulationService {
         private BigDecimal finalPrice;
         private int totalCupsSold;
         private List<SimulationStep> steps;
+
+        public SimulationResponse() {}
+        public SimulationResponse(String flavourName, int initialVolumeMl, int finalVolumeMl, BigDecimal initialPrice, BigDecimal finalPrice, int totalCupsSold, List<SimulationStep> steps) {
+            this.flavourName = flavourName;
+            this.initialVolumeMl = initialVolumeMl;
+            this.finalVolumeMl = finalVolumeMl;
+            this.initialPrice = initialPrice;
+            this.finalPrice = finalPrice;
+            this.totalCupsSold = totalCupsSold;
+            this.steps = steps;
+        }
+
+        public String getFlavourName() { return flavourName; }
+        public void setFlavourName(String flavourName) { this.flavourName = flavourName; }
+        public int getInitialVolumeMl() { return initialVolumeMl; }
+        public void setInitialVolumeMl(int initialVolumeMl) { this.initialVolumeMl = initialVolumeMl; }
+        public int getFinalVolumeMl() { return finalVolumeMl; }
+        public void setFinalVolumeMl(int finalVolumeMl) { this.finalVolumeMl = finalVolumeMl; }
+        public BigDecimal getInitialPrice() { return initialPrice; }
+        public void setInitialPrice(BigDecimal initialPrice) { this.initialPrice = initialPrice; }
+        public BigDecimal getFinalPrice() { return finalPrice; }
+        public void setFinalPrice(BigDecimal finalPrice) { this.finalPrice = finalPrice; }
+        public int getTotalCupsSold() { return totalCupsSold; }
+        public void setTotalCupsSold(int totalCupsSold) { this.totalCupsSold = totalCupsSold; }
+        public List<SimulationStep> getSteps() { return steps; }
+        public void setSteps(List<SimulationStep> steps) { this.steps = steps; }
+
+        public static SimulationResponseBuilder builder() { return new SimulationResponseBuilder(); }
+        public static class SimulationResponseBuilder {
+            private String flavourName;
+            private int initialVolumeMl;
+            private int finalVolumeMl;
+            private BigDecimal initialPrice;
+            private BigDecimal finalPrice;
+            private int totalCupsSold;
+            private List<SimulationStep> steps;
+
+            public SimulationResponseBuilder flavourName(String flavourName) { this.flavourName = flavourName; return this; }
+            public SimulationResponseBuilder initialVolumeMl(int initialVolumeMl) { this.initialVolumeMl = initialVolumeMl; return this; }
+            public SimulationResponseBuilder finalVolumeMl(int finalVolumeMl) { this.finalVolumeMl = finalVolumeMl; return this; }
+            public SimulationResponseBuilder initialPrice(BigDecimal initialPrice) { this.initialPrice = initialPrice; return this; }
+            public SimulationResponseBuilder finalPrice(BigDecimal finalPrice) { this.finalPrice = finalPrice; return this; }
+            public SimulationResponseBuilder totalCupsSold(int totalCupsSold) { this.totalCupsSold = totalCupsSold; return this; }
+            public SimulationResponseBuilder steps(List<SimulationStep> steps) { this.steps = steps; return this; }
+            public SimulationResponse build() { return new SimulationResponse(flavourName, initialVolumeMl, finalVolumeMl, initialPrice, finalPrice, totalCupsSold, steps); }
+        }
     }
 
     public SimulationResponse runSimulation(SimulationRequest request) {

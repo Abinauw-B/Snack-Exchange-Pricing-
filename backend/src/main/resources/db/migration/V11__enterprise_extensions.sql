@@ -26,23 +26,16 @@ CREATE TABLE IF NOT EXISTS user_login_activity (
     status VARCHAR(20) NOT NULL
 );
 
--- Seed Categories if missing
-INSERT INTO beverage_categories (id, name, code, description, category_weight, display_order) VALUES
-(1, 'Fresh Fruit Juices', 'FRUIT_JUICE', 'Pure 100% natural cold pressed fruit juices', 1.0, 1),
-(2, 'Coolers & Mocktails', 'COOLERS', 'Chilled refreshing mocktail coolers', 1.0, 2)
-ON CONFLICT (id) DO NOTHING;
-
 -- Seed Default Enterprise Users (Passwords: admin123, manager123, cashier123, kitchen123, inventory123, viewer123)
--- BCrypt encoded hash for 'admin123': $2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O (or plaintext fallback handling)
+-- BCrypt encoded hash for 'admin123': $2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O
 INSERT INTO users (id, username, email, password_hash, full_name, role_id, status) VALUES
 (1, 'superadmin', 'superadmin@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Super Administrator', 1, 'ACTIVE'),
 (2, 'admin', 'admin@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'System Administrator', 1, 'ACTIVE'),
-(3, 'manager', 'manager@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Operations Manager', 2, 'ACTIVE'),
+(3, 'manager', 'manager@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Operations Manager', 3, 'ACTIVE'),
 (4, 'cashier', 'cashier@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'POS Cashier', 4, 'ACTIVE'),
 (5, 'kitchen', 'kitchen@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Kitchen Staff', 3, 'ACTIVE'),
-(6, 'inventory', 'inventory@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Inventory Manager', 2, 'ACTIVE'),
-(7, 'viewer', 'viewer@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Executive Viewer', 5, 'ACTIVE')
-ON CONFLICT (id) DO NOTHING;
+(6, 'inventory', 'inventory@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Inventory Manager', 3, 'ACTIVE'),
+(7, 'viewer', 'viewer@pubexchange.com', '$2a$10$e0MYzXyjpJS7Pd0RVvHwHe16n/G36m./o0WcT8x98e87vO3hL5V/O', 'Executive Viewer', 5, 'ACTIVE');
 
 -- Initial Notifications
 INSERT INTO system_notifications (title, message, type) VALUES

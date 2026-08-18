@@ -175,6 +175,19 @@
           products.push(cp);
         }
       });
+      loadDynamicProducts();
+    }
+
+    function loadDynamicProducts() {
+      const savedDynamic = JSON.parse(localStorage.getItem('pubexchange_dynamic_products') || '[]');
+      savedDynamic.forEach(sp => {
+        const p = products.find(prod => prod.id === sp.id || (prod.name && sp.name && prod.name.toLowerCase() === sp.name.toLowerCase()));
+        if (p && sp.currentCupPrice !== undefined) {
+          p.currentCupPrice = sp.currentCupPrice;
+          if (sp.trend !== undefined) p.trend = sp.trend;
+          if (sp.trendDirection !== undefined) p.trendDirection = sp.trendDirection;
+        }
+      });
     }
 
     async function fetchLiveExchangeData() {
@@ -217,7 +230,7 @@
         products.forEach(p => p.currentCupPrice = p.minCupPrice || crashFloor);
       } else {
         banner.style.display = 'none';
-        products.forEach(p => p.currentCupPrice = p.basePrice || 20);
+        loadDynamicProducts();
       }
 
       renderBoard();
@@ -232,16 +245,31 @@
         renderBoard();
       } else if (event.data?.type === 'PRODUCT_PRICE_UPDATE' && event.data.payload) {
         applySimulatedProductUpdate(event.data.payload);
+      } else if (event.data?.type === 'BATCH_PRODUCT_PRICE_UPDATED' && event.data.payload?.products) {
+        applyBatchPriceUpdate(event.data.payload.products);
       } else if (event.data?.type) {
         fetchLiveExchangeData();
       }
     };
 
     window.addEventListener('storage', (e) => {
-      if (e.key === 'pubexchange_event') {
+      if (e.key === 'pubexchange_event' || e.key === 'pubexchange_dynamic_products') {
         fetchLiveExchangeData();
       }
     });
+
+    function applyBatchPriceUpdate(updatedList) {
+      if (!updatedList || !Array.isArray(updatedList)) return;
+      updatedList.forEach(up => {
+        const p = products.find(prod => prod.id === up.productId || (prod.name && up.flavourName && prod.name.toLowerCase() === up.flavourName.toLowerCase()));
+        if (p) {
+          if (up.finalPrice !== undefined) p.currentCupPrice = up.finalPrice;
+          if (up.trend !== undefined) p.trend = up.trend;
+          if (up.trendDirection !== undefined) p.trendDirection = up.trendDirection;
+        }
+      });
+      renderBoard();
+    }
 
     function applySimulatedProductUpdate(payload) {
       if (!payload || !payload.flavourName) return;

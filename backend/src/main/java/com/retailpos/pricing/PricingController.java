@@ -4,8 +4,6 @@ import com.retailpos.domain.PriceHistory;
 import com.retailpos.domain.PriceHistoryRepository;
 import com.retailpos.domain.SystemConfig;
 import com.retailpos.domain.SystemConfigRepository;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +13,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/pricing")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class PricingController {
 
     private final PriceAdjustmentService priceAdjustmentService;
@@ -24,6 +21,14 @@ public class PricingController {
     private final SystemConfigRepository systemConfigRepository;
     private final MarketCrashService marketCrashService;
 
+    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, MarketCrashService marketCrashService) {
+        this.priceAdjustmentService = priceAdjustmentService;
+        this.pricingSimulationService = pricingSimulationService;
+        this.priceHistoryRepository = priceHistoryRepository;
+        this.systemConfigRepository = systemConfigRepository;
+        this.marketCrashService = marketCrashService;
+    }
+
     @GetMapping("/market-crash/status")
     public ResponseEntity<MarketCrashService.MarketCrashStatus> getMarketCrashStatus() {
         return ResponseEntity.ok(marketCrashService.getStatus());
@@ -31,7 +36,7 @@ public class PricingController {
 
     @PostMapping("/market-crash/trigger")
     public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(defaultValue = "3") int durationMinutes) {
-        return ResponseEntity.ok(marketCrashService.triggerMarketCrash(durationMinutes));
+        return ResponseEntity.ok(marketCrashService.triggerMarketCrash(durationMinutes, "MANUAL_ADMIN"));
     }
 
     @PostMapping("/market-crash/stop")
@@ -69,10 +74,19 @@ public class PricingController {
         return ResponseEntity.ok(systemConfigRepository.findAll());
     }
 
-    @Data
     public static class UpdateConfigItem {
         private String key;
         private String value;
+
+        public UpdateConfigItem() {}
+        public UpdateConfigItem(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+        public String getKey() { return key; }
+        public void setKey(String key) { this.key = key; }
+        public String getValue() { return value; }
+        public void setValue(String value) { this.value = value; }
     }
 
     @PutMapping("/config")

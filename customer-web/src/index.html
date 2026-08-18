@@ -491,24 +491,12 @@
       const activeTrendMap = {};
       const activeDirMap = {};
 
-      if (products && Array.isArray(products)) {
-        products.forEach(p => {
-          if (p.id && p.currentCupPrice !== undefined) {
-            activePriceMap[p.id] = p.currentCupPrice;
-            activeTrendMap[p.id] = p.trend;
-            activeDirMap[p.id] = p.trendDirection;
-          }
-        });
-      }
-
       const savedDynamic = JSON.parse(localStorage.getItem('pubexchange_dynamic_products') || '[]');
       savedDynamic.forEach(sp => {
         if (sp.id && sp.currentCupPrice !== undefined) {
-          if (activePriceMap[sp.id] === undefined) {
-            activePriceMap[sp.id] = sp.currentCupPrice;
-            activeTrendMap[sp.id] = sp.trend;
-            activeDirMap[sp.id] = sp.trendDirection;
-          }
+          activePriceMap[sp.id] = sp.currentCupPrice;
+          if (sp.trend !== undefined) activeTrendMap[sp.id] = sp.trend;
+          if (sp.trendDirection !== undefined) activeDirMap[sp.id] = sp.trendDirection;
         }
       });
 
@@ -550,9 +538,10 @@
 
       if (!isMarketCrashActive) {
         products.forEach(p => {
-          if (p.minCupPrice && p.currentCupPrice < p.minCupPrice) {
-            p.currentCupPrice = p.basePrice || p.minCupPrice;
-          }
+          const minP = p.minCupPrice || 18;
+          const maxP = p.maxCupPrice || 25;
+          if (p.currentCupPrice < minP) p.currentCupPrice = minP;
+          if (p.currentCupPrice > maxP) p.currentCupPrice = maxP;
         });
       }
     }
@@ -567,6 +556,7 @@
         } else {
           products.push(cp);
         }
+        saveDynamicProductsState();
         renderProducts();
         renderTicker();
       } else if (msg.type === 'MARKET_CRASH_TRIGGER') {
@@ -578,9 +568,26 @@
         stopLocalMarketCrash();
       } else if (msg.type === 'PRODUCT_PRICE_UPDATE') {
         applySimulatedProductUpdate(msg.payload);
+      } else if (msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' && msg.payload?.products) {
+        applyBatchPriceUpdate(msg.payload.products);
       } else if (msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED') {
         fetchProducts();
       }
+    }
+
+    function applyBatchPriceUpdate(updatedList) {
+      if (!updatedList || !Array.isArray(updatedList)) return;
+      updatedList.forEach(up => {
+        const p = products.find(prod => prod.id === up.productId || (prod.name && up.flavourName && prod.name.toLowerCase() === up.flavourName.toLowerCase()));
+        if (p) {
+          if (up.finalPrice !== undefined) p.currentCupPrice = up.finalPrice;
+          if (up.trend !== undefined) p.trend = up.trend;
+          if (up.trendDirection !== undefined) p.trendDirection = up.trendDirection;
+        }
+      });
+      saveDynamicProductsState();
+      renderProducts();
+      renderTicker();
     }
 
     function applySimulatedProductUpdate(payload) {
@@ -597,11 +604,16 @@
           if (payload.finalPrice) {
             const oldP = p.currentCupPrice;
             p.currentCupPrice = payload.finalPrice;
+            const diff = p.currentCupPrice - (p.basePrice || 20);
+            const pct = Math.round((diff / (p.basePrice || 20)) * 100);
+            p.trendDirection = pct < 0 ? 'DOWN' : (pct > 0 ? 'UP' : 'FLAT');
+            p.trend = `${pct >= 0 ? '+' : ''}${pct}% ${pct < 0 ? '▼' : '▲'}`;
             p.flashEffect = payload.finalPrice > oldP ? 'flash-surge' : (payload.finalPrice < oldP ? 'flash-discount' : '');
             setTimeout(() => { p.flashEffect = ''; }, 1500);
           }
         }
       });
+      saveDynamicProductsState();
       renderProducts();
       renderTicker();
     }
@@ -931,6 +943,7 @@
         items: cart.map(i => ({
           productId: i.product.id,
           quantity: i.quantity,
+          cupSizeMl: i.cupSizeMl,
           unitPrice: isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice
         })),
         totalAmount,

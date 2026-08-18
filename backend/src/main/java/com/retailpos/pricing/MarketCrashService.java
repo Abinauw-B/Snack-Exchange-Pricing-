@@ -1,10 +1,6 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,10 +13,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-@Slf4j
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
-@RequiredArgsConstructor
 public class MarketCrashService {
+
+    private static final Logger log = LoggerFactory.getLogger(MarketCrashService.class);
 
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
@@ -31,15 +30,60 @@ public class MarketCrashService {
     private String currentCrashCode;
     private String triggerSource = "MANUAL_ADMIN";
 
-    @Data
-    @Builder
+    public MarketCrashService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
+        this.productRepository = productRepository;
+        this.priceHistoryRepository = priceHistoryRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
+
     public static class MarketCrashStatus {
         private boolean active;
         private String eventCode;
-        private String triggerType; // MANUAL, SCHEDULED, RANDOM_ALGORITHM
+        private String triggerType;
         private long remainingSeconds;
         private LocalDateTime endTime;
         private String message;
+
+        public MarketCrashStatus() {}
+        public MarketCrashStatus(boolean active, String eventCode, String triggerType, long remainingSeconds, LocalDateTime endTime, String message) {
+            this.active = active;
+            this.eventCode = eventCode;
+            this.triggerType = triggerType;
+            this.remainingSeconds = remainingSeconds;
+            this.endTime = endTime;
+            this.message = message;
+        }
+
+        public boolean isActive() { return active; }
+        public void setActive(boolean active) { this.active = active; }
+        public String getEventCode() { return eventCode; }
+        public void setEventCode(String eventCode) { this.eventCode = eventCode; }
+        public String getTriggerType() { return triggerType; }
+        public void setTriggerType(String triggerType) { this.triggerType = triggerType; }
+        public long getRemainingSeconds() { return remainingSeconds; }
+        public void setRemainingSeconds(long remainingSeconds) { this.remainingSeconds = remainingSeconds; }
+        public LocalDateTime getEndTime() { return endTime; }
+        public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+
+        public static MarketCrashStatusBuilder builder() { return new MarketCrashStatusBuilder(); }
+        public static class MarketCrashStatusBuilder {
+            private boolean active;
+            private String eventCode;
+            private String triggerType;
+            private long remainingSeconds;
+            private LocalDateTime endTime;
+            private String message;
+
+            public MarketCrashStatusBuilder active(boolean active) { this.active = active; return this; }
+            public MarketCrashStatusBuilder eventCode(String eventCode) { this.eventCode = eventCode; return this; }
+            public MarketCrashStatusBuilder triggerType(String triggerType) { this.triggerType = triggerType; return this; }
+            public MarketCrashStatusBuilder remainingSeconds(long remainingSeconds) { this.remainingSeconds = remainingSeconds; return this; }
+            public MarketCrashStatusBuilder endTime(LocalDateTime endTime) { this.endTime = endTime; return this; }
+            public MarketCrashStatusBuilder message(String message) { this.message = message; return this; }
+            public MarketCrashStatus build() { return new MarketCrashStatus(active, eventCode, triggerType, remainingSeconds, endTime, message); }
+        }
     }
 
     public synchronized MarketCrashStatus getStatus() {

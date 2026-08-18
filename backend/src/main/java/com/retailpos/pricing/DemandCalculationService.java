@@ -1,19 +1,23 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.SalesOrderItemRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Service
-@RequiredArgsConstructor
 public class DemandCalculationService {
 
     private final SalesOrderItemRepository salesOrderItemRepository;
     private final StockPressureService stockPressureService;
     private final TimeFactorService timeFactorService;
+
+    public DemandCalculationService(SalesOrderItemRepository salesOrderItemRepository, StockPressureService stockPressureService, TimeFactorService timeFactorService) {
+        this.salesOrderItemRepository = salesOrderItemRepository;
+        this.stockPressureService = stockPressureService;
+        this.timeFactorService = timeFactorService;
+    }
 
     public double calculateVelocityScore(Long productId, int windowMinutes) {
         LocalDateTime since = LocalDateTime.now().minusMinutes(windowMinutes);

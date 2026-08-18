@@ -1,7 +1,6 @@
 package com.retailpos.inventory;
 
 import com.retailpos.domain.*;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,12 +9,17 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class JuiceBatchService {
 
     private final JuiceBatchRepository batchRepository;
     private final ProductRepository productRepository;
     private final InventoryTransactionRepository transactionRepository;
+
+    public JuiceBatchService(JuiceBatchRepository batchRepository, ProductRepository productRepository, InventoryTransactionRepository transactionRepository) {
+        this.batchRepository = batchRepository;
+        this.productRepository = productRepository;
+        this.transactionRepository = transactionRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<JuiceBatch> getAllBatches() {

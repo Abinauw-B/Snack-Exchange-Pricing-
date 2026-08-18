@@ -2,7 +2,6 @@ package com.retailpos.notification;
 
 import com.retailpos.domain.SystemNotification;
 import com.retailpos.domain.SystemNotificationRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +11,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/notifications")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class NotificationController {
 
     private final SystemNotificationRepository notificationRepository;
+
+    public NotificationController(SystemNotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
 
     @GetMapping
     public ResponseEntity<List<SystemNotification>> getNotifications() {

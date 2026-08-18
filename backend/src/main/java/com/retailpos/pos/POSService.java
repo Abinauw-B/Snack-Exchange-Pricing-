@@ -3,9 +3,6 @@ package com.retailpos.pos;
 import com.retailpos.domain.*;
 import com.retailpos.inventory.JuiceBatchService;
 import com.retailpos.pricing.MarketCrashService;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +11,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 @Service
-@RequiredArgsConstructor
 public class POSService {
 
     private final ProductRepository productRepository;
@@ -23,22 +21,51 @@ public class POSService {
     private final PriceHistoryRepository priceHistoryRepository;
     private final JuiceBatchService juiceBatchService;
     private final MarketCrashService marketCrashService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    @Data
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, SimpMessagingTemplate messagingTemplate) {
+        this.productRepository = productRepository;
+        this.salesOrderRepository = salesOrderRepository;
+        this.priceHistoryRepository = priceHistoryRepository;
+        this.juiceBatchService = juiceBatchService;
+        this.marketCrashService = marketCrashService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
     public static class CartItemRequest {
         private Long productId;
         private Integer quantity;
-        private Integer cupSizeMl; // Defaults to 250ml
+        private Integer cupSizeMl;
+
+        public CartItemRequest() {}
+        public CartItemRequest(Long productId, Integer quantity, Integer cupSizeMl) {
+            this.productId = productId;
+            this.quantity = quantity;
+            this.cupSizeMl = cupSizeMl;
+        }
+        public Long getProductId() { return productId; }
+        public void setProductId(Long productId) { this.productId = productId; }
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public Integer getCupSizeMl() { return cupSizeMl; }
+        public void setCupSizeMl(Integer cupSizeMl) { this.cupSizeMl = cupSizeMl; }
     }
 
-    @Data
     public static class CheckoutRequest {
         private List<CartItemRequest> items;
-        private String paymentMethod; // CASH, UPI, CARD
+        private String paymentMethod;
+
+        public CheckoutRequest() {}
+        public CheckoutRequest(List<CartItemRequest> items, String paymentMethod) {
+            this.items = items;
+            this.paymentMethod = paymentMethod;
+        }
+        public List<CartItemRequest> getItems() { return items; }
+        public void setItems(List<CartItemRequest> items) { this.items = items; }
+        public String getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     }
 
-    @Data
-    @Builder
     public static class CheckoutResponse {
         private String orderNumber;
         private BigDecimal totalAmount;
@@ -46,10 +73,48 @@ public class POSService {
         private String paymentStatus;
         private LocalDateTime timestamp;
         private List<OrderItemResponse> items;
+
+        public CheckoutResponse() {}
+        public CheckoutResponse(String orderNumber, BigDecimal totalAmount, String paymentMethod, String paymentStatus, LocalDateTime timestamp, List<OrderItemResponse> items) {
+            this.orderNumber = orderNumber;
+            this.totalAmount = totalAmount;
+            this.paymentMethod = paymentMethod;
+            this.paymentStatus = paymentStatus;
+            this.timestamp = timestamp;
+            this.items = items;
+        }
+        public String getOrderNumber() { return orderNumber; }
+        public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
+        public BigDecimal getTotalAmount() { return totalAmount; }
+        public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+        public String getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+        public String getPaymentStatus() { return paymentStatus; }
+        public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+        public LocalDateTime getTimestamp() { return timestamp; }
+        public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+        public List<OrderItemResponse> getItems() { return items; }
+        public void setItems(List<OrderItemResponse> items) { this.items = items; }
+
+        public static CheckoutResponseBuilder builder() { return new CheckoutResponseBuilder(); }
+        public static class CheckoutResponseBuilder {
+            private String orderNumber;
+            private BigDecimal totalAmount;
+            private String paymentMethod;
+            private String paymentStatus;
+            private LocalDateTime timestamp;
+            private List<OrderItemResponse> items;
+
+            public CheckoutResponseBuilder orderNumber(String orderNumber) { this.orderNumber = orderNumber; return this; }
+            public CheckoutResponseBuilder totalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; return this; }
+            public CheckoutResponseBuilder paymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; return this; }
+            public CheckoutResponseBuilder paymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; return this; }
+            public CheckoutResponseBuilder timestamp(LocalDateTime timestamp) { this.timestamp = timestamp; return this; }
+            public CheckoutResponseBuilder items(List<OrderItemResponse> items) { this.items = items; return this; }
+            public CheckoutResponse build() { return new CheckoutResponse(orderNumber, totalAmount, paymentMethod, paymentStatus, timestamp, items); }
+        }
     }
 
-    @Data
-    @Builder
     public static class OrderItemResponse {
         private String productName;
         private Integer quantity;
@@ -57,6 +122,46 @@ public class POSService {
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;
         private Integer volumeDeductedMl;
+
+        public OrderItemResponse() {}
+        public OrderItemResponse(String productName, Integer quantity, Integer cupSizeMl, BigDecimal unitPrice, BigDecimal totalPrice, Integer volumeDeductedMl) {
+            this.productName = productName;
+            this.quantity = quantity;
+            this.cupSizeMl = cupSizeMl;
+            this.unitPrice = unitPrice;
+            this.totalPrice = totalPrice;
+            this.volumeDeductedMl = volumeDeductedMl;
+        }
+        public String getProductName() { return productName; }
+        public void setProductName(String productName) { this.productName = productName; }
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        public Integer getCupSizeMl() { return cupSizeMl; }
+        public void setCupSizeMl(Integer cupSizeMl) { this.cupSizeMl = cupSizeMl; }
+        public BigDecimal getUnitPrice() { return unitPrice; }
+        public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+        public BigDecimal getTotalPrice() { return totalPrice; }
+        public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+        public Integer getVolumeDeductedMl() { return volumeDeductedMl; }
+        public void setVolumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; }
+
+        public static OrderItemResponseBuilder builder() { return new OrderItemResponseBuilder(); }
+        public static class OrderItemResponseBuilder {
+            private String productName;
+            private Integer quantity;
+            private Integer cupSizeMl;
+            private BigDecimal unitPrice;
+            private BigDecimal totalPrice;
+            private Integer volumeDeductedMl;
+
+            public OrderItemResponseBuilder productName(String productName) { this.productName = productName; return this; }
+            public OrderItemResponseBuilder quantity(Integer quantity) { this.quantity = quantity; return this; }
+            public OrderItemResponseBuilder cupSizeMl(Integer cupSizeMl) { this.cupSizeMl = cupSizeMl; return this; }
+            public OrderItemResponseBuilder unitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; return this; }
+            public OrderItemResponseBuilder totalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; return this; }
+            public OrderItemResponseBuilder volumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; return this; }
+            public OrderItemResponse build() { return new OrderItemResponse(productName, quantity, cupSizeMl, unitPrice, totalPrice, volumeDeductedMl); }
+        }
     }
 
     @Transactional
@@ -175,6 +280,11 @@ public class POSService {
                     priceHistoryRepository.save(history);
                 }
             }
+            try {
+                if (messagingTemplate != null) {
+                    messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+                }
+            } catch (Exception e) {}
         }
 
         return CheckoutResponse.builder()

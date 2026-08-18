@@ -3,7 +3,6 @@ package com.retailpos.pos;
 import com.retailpos.domain.Product;
 import com.retailpos.domain.ProductRepository;
 import com.retailpos.inventory.JuiceBatchService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,12 +13,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/pos")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class POSController {
 
     private final POSService posService;
     private final ProductRepository productRepository;
     private final JuiceBatchService juiceBatchService;
+
+    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService) {
+        this.posService = posService;
+        this.productRepository = productRepository;
+        this.juiceBatchService = juiceBatchService;
+    }
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAvailableProducts() {
@@ -75,7 +79,7 @@ public class POSController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/checkout")
+    @PostMapping({"/checkout", "/orders"})
     public ResponseEntity<POSService.CheckoutResponse> checkout(@RequestBody POSService.CheckoutRequest request) {
         POSService.CheckoutResponse response = posService.processCheckout(request);
         return ResponseEntity.ok(response);

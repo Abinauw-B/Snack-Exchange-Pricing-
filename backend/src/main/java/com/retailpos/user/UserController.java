@@ -4,7 +4,6 @@ import com.retailpos.domain.User;
 import com.retailpos.domain.UserRepository;
 import com.retailpos.domain.Role;
 import com.retailpos.domain.RoleRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +12,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    public UserController(UserRepository userRepository, RoleRepository roleRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+    }
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
