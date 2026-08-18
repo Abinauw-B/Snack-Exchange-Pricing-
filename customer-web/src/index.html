@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <style>
     :root {
       --bg-main: #f8fafc;
@@ -323,8 +325,8 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 14px;">
-        <span style="font-size: 14px; font-weight: 900; padding: 10px 20px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border-radius: 24px; border: 1.5px solid #86efac; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
-          🟢 LIVE EXCHANGE TRADING ACTIVE
+        <span id="backendHealthBadge" style="font-size: 14px; font-weight: 900; padding: 10px 20px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border-radius: 24px; border: 1.5px solid #86efac; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+          🟢 BACKEND CONNECTED (8088)
         </span>
         <a href="http://localhost:8001/" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: #ffffff; color: #0f172a; padding: 10px 18px; border-radius: 20px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 6px;">
           ⚙️ Admin Panel (8001)
@@ -762,7 +764,9 @@
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       grid.innerHTML = products.map(p => {
-        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
+        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20);
+        const baseP = p.defaultCupPrice || p.basePrice || 20;
+        const diff = activePrice - baseP;
         const icon = fruitIcons[p.id] || '🍹';
         const cardClass = fruitCardClasses[p.id] || 'card-orange';
 
@@ -771,16 +775,33 @@
         if (isMarketCrashActive) {
           badgeClass = 'badge-crash';
           badgeText = '🚨 MARKET CRASH ₹18';
-        } else if (activePrice >= 22) {
-          badgeClass = 'badge-high'; badgeText = '🔥 Demand Surge ▲';
-        } else if (activePrice <= 19) {
-          badgeClass = 'badge-low'; badgeText = '⚡ Bargain Floor ▼';
+        } else if (diff > 0) {
+          badgeClass = 'badge-high';
+          badgeText = `📈 PROFIT SURGE (+₹${diff})`;
+        } else if (diff < 0) {
+          badgeClass = 'badge-low';
+          badgeText = `📉 LOSS DISCOUNT (-₹${Math.abs(diff)})`;
         }
 
-        const pctChange = (((activePrice - (p.basePrice || 20)) / (p.basePrice || 20)) * 100).toFixed(0);
-        const pctText = isMarketCrashActive ? '-10% ▼ [CRASH]' : (pctChange >= 0 ? `+${pctChange}% ▲` : `${pctChange}% ▼`);
-        const pctColor = isMarketCrashActive ? '#dc2626' : (pctChange > 0 ? '#14532d' : (pctChange < 0 ? '#991b1b' : '#475569'));
-        const pctBg = isMarketCrashActive ? 'linear-gradient(135deg, #ffe4e6, #fecdd3)' : (pctChange > 0 ? 'linear-gradient(135deg, #dcfce7, #bbf7d0)' : (pctChange < 0 ? 'linear-gradient(135deg, #ffe4e6, #fecdd3)' : '#f1f5f9'));
+        const pctChange = (((activePrice - baseP) / baseP) * 100).toFixed(0);
+        let pctText, pctColor, pctBg;
+        if (isMarketCrashActive) {
+          pctText = '-10% ▼ [CRASH LOSS]';
+          pctColor = '#991b1b';
+          pctBg = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
+        } else if (diff > 0) {
+          pctText = `+${pctChange}% ▲ [PROFIT]`;
+          pctColor = '#14532d';
+          pctBg = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+        } else if (diff < 0) {
+          pctText = `${pctChange}% ▼ [LOSS]`;
+          pctColor = '#991b1b';
+          pctBg = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
+        } else {
+          pctText = `0% = [BASE ₹${baseP}]`;
+          pctColor = '#475569';
+          pctBg = '#f1f5f9';
+        }
 
         return `
           <div class="flavour-card ${cardClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
@@ -799,11 +820,11 @@
             <div class="price-box">
               <div>
                 <span class="price-tag">₹${activePrice}</span>
-                <span style="font-size: 13px; font-weight: 800; color: #64748b;"> / ${p.defaultCupSizeMl}ml</span>
+                <span style="font-size: 13px; font-weight: 800; color: #64748b;"> / ${p.defaultCupSizeMl || 250}ml</span>
               </div>
               <div style="text-align: right;">
-                <span style="font-size: 11px; font-weight: 800; color: #64748b; display: block;">Base ₹${p.basePrice || 20}</span>
-                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${p.minCupPrice} - ₹${p.maxCupPrice}]</span>
+                <span style="font-size: 11px; font-weight: 800; color: #64748b; display: block;">Base ₹${baseP}</span>
+                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${p.minCupPrice || 18} - ₹${p.maxCupPrice || 25}]</span>
               </div>
             </div>
 
@@ -1014,12 +1035,71 @@
       renderCart();
     }
 
-    function closeReceiptModal() {
-      document.getElementById('receiptModal').style.display = 'none';
+    async function checkBackendHealth() {
+      try {
+        const res = await fetch('http://localhost:8088/api/health');
+        const badge = document.getElementById('backendHealthBadge');
+        if (badge) {
+          if (res.ok) {
+            badge.innerHTML = '🟢 BACKEND CONNECTED (8088)';
+            badge.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+            badge.style.color = '#14532d';
+            badge.style.borderColor = '#86efac';
+          } else {
+            badge.innerHTML = '🔴 BACKEND OFFLINE';
+            badge.style.background = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
+            badge.style.color = '#991b1b';
+            badge.style.borderColor = '#fda4af';
+          }
+        }
+      } catch (err) {
+        const badge = document.getElementById('backendHealthBadge');
+        if (badge) {
+          badge.innerHTML = '🔴 BACKEND OFFLINE';
+          badge.style.background = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
+          badge.style.color = '#991b1b';
+          badge.style.borderColor = '#fda4af';
+        }
+      }
     }
 
+    function connectWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      try {
+        const socket = new SockJS('http://localhost:8088/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function () {
+          stompClient.subscribe('/topic/prices', function (message) {
+            if (message.body) {
+              const res = JSON.parse(message.body);
+              if (res && res.updatedPrices) {
+                products = res.updatedPrices;
+                renderProducts();
+                renderTicker();
+              } else if (Array.isArray(res)) {
+                products = res;
+                renderProducts();
+                renderTicker();
+              }
+            }
+          });
+          stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message.body) {
+              checkMarketCrashStatus();
+            }
+          });
+        }, function () {
+          setTimeout(connectWebSocket, 5000);
+        });
+      } catch (err) {}
+    }
+
+    checkBackendHealth();
     fetchProducts();
     checkMarketCrashStatus();
+    connectWebSocket();
+    setInterval(checkBackendHealth, 5000);
     setInterval(fetchProducts, 1000);
     setInterval(checkMarketCrashStatus, 2000);
   </script>

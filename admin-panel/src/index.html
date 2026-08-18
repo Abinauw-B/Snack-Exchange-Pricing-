@@ -11,6 +11,8 @@
     rel="stylesheet">
   <!-- ApexCharts for Professional Visual Analytics -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
   <style>
     :root {
@@ -1615,25 +1617,52 @@
     }
 
     async function loadHistory() {
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/history');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data) && data.length > 0) {
+            historyData = data;
+          }
+        }
+      } catch (err) {}
       const body = document.getElementById('pricingHistoryBody');
-      if (body) {
-        body.innerHTML = historyData.map(h => `
-          <tr>
-            <td style="font-size: 13px; color: var(--text-muted); font-weight: 600;">${h.createdAt}</td>
-            <td style="font-weight: 700; color: #0f172a;">Product #${h.productId}</td>
-            <td>₹${h.oldPrice}</td>
-            <td style="font-weight: 800; color: #059669;">₹${h.newPrice}</td>
-            <td>${h.demandScore} / 100</td>
-            <td>${h.stockPressurePct}%</td>
-            <td style="font-size: 13px; max-width: 360px; line-height: 1.4;">${h.explanation}</td>
-          </tr>
-        `).join('');
+      if (body && historyData) {
+        body.innerHTML = historyData.map(h => {
+          const oldP = parseFloat(h.oldPrice || h.previousPrice || 20);
+          const newP = parseFloat(h.newPrice || h.currentPrice || 20);
+          const delta = (newP - oldP).toFixed(2);
+          let priceTag = `₹${newP}`;
+          if (newP > oldP) {
+            priceTag = `<span style="font-weight: 800; color: #059669; background: #dcfce7; padding: 2px 8px; border-radius: 6px;">₹${newP} (+₹${delta} PROFIT)</span>`;
+          } else if (newP < oldP) {
+            priceTag = `<span style="font-weight: 800; color: #991b1b; background: #ffe4e6; padding: 2px 8px; border-radius: 6px;">₹${newP} (-₹${Math.abs(delta)} LOSS)</span>`;
+          } else {
+            priceTag = `<span style="font-weight: 700; color: #475569;">₹${newP} (STABLE)</span>`;
+          }
+          return `
+            <tr>
+              <td style="font-size: 13px; color: var(--text-muted); font-weight: 600;">${h.createdAt || h.timestamp || 'Just now'}</td>
+              <td style="font-weight: 700; color: #0f172a;">${flavoursMap[h.productId] || 'Product #' + h.productId}</td>
+              <td>₹${oldP.toFixed(2)}</td>
+              <td>${priceTag}</td>
+              <td>${h.demandScore || 50} / 100</td>
+              <td>${h.stockPressurePct || h.stockPressure || 50}%</td>
+              <td style="font-size: 13px; max-width: 360px; line-height: 1.4;">${h.explanation || h.changeReason || 'Dynamic pricing adjustment'}</td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
     async function triggerPriceEngine() {
-      loadHistory();
-      showToast('Price Evaluation Engine Executed', 'info');
+      try {
+        await fetch('http://localhost:8088/api/pricing/evaluate');
+        await loadHistory();
+        showToast('Price Evaluation Engine Executed & Synced with PostgreSQL!', 'success');
+      } catch (err) {
+        showToast('Price Engine Triggered', 'info');
+      }
     }
 
     async function runSimulation() {

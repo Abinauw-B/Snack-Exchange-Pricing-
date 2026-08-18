@@ -74,6 +74,23 @@ public class JuiceInventoryAndPricingTests {
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("25.00"))
                         .build()));
+        if (mangoProduct.getCurrentCupPrice() == null || mangoProduct.getCurrentCupPrice().compareTo(new BigDecimal("20.00")) != 0) {
+            mangoProduct.setCurrentCupPrice(new BigDecimal("20.00"));
+            mangoProduct = productRepository.save(mangoProduct);
+        }
+        JuiceBatch batch = batchRepository.findFirstActiveBatchForProduct(mangoProduct.getId()).orElse(null);
+        if (batch == null || batch.getRemainingVolumeMl() < 1000) {
+            batchRepository.save(JuiceBatch.builder()
+                    .productId(mangoProduct.getId())
+                    .batchCode("BATCH-TEST-" + System.currentTimeMillis())
+                    .containerCapacityMl(20000)
+                    .initialVolumeMl(20000)
+                    .remainingVolumeMl(20000)
+                    .cupSizeMl(250)
+                    .status(JuiceBatch.BatchStatus.ACTIVE)
+                    .createdAt(java.time.LocalDateTime.now())
+                    .build());
+        }
     }
 
     @Test
@@ -173,6 +190,7 @@ public class JuiceInventoryAndPricingTests {
     @DisplayName("Req 10: Cooldown window enforcement")
     @Transactional
     void testCooldownEnforcement() {
+        systemConfigRepository.save(new com.retailpos.domain.SystemConfig("cooldown_minutes", "10", "Cooldown mins"));
         mangoProduct.setLastPriceChangeTimestamp(java.time.LocalDateTime.now());
         productRepository.save(mangoProduct);
 

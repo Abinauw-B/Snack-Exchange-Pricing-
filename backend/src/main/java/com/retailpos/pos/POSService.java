@@ -265,7 +265,7 @@ public class POSService {
                 if (newPrice.compareTo(oldPrice) != 0) {
                     p.setCurrentCupPrice(newPrice);
                     p.setLastPriceChangeTimestamp(now);
-                    productRepository.save(p);
+                    productRepository.saveAndFlush(p);
 
                     PriceHistory history = PriceHistory.builder()
                             .productId(p.getId())
@@ -280,6 +280,7 @@ public class POSService {
                     priceHistoryRepository.save(history);
                 }
             }
+            productRepository.flush();
             try {
                 if (messagingTemplate != null) {
                     messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());

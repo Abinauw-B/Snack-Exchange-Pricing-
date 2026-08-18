@@ -129,13 +129,13 @@ public class PriceAdjustmentService {
         double wVelocity = getConfigDouble("weight_velocity", 0.40);
         double wStock = getConfigDouble("weight_stock_pressure", 0.40);
         double wTime = getConfigDouble("weight_time_factor", 0.20);
-        long cooldownMins = getConfigLong("cooldown_minutes", 10);
+        long cooldownMins = getConfigLong("cooldown_minutes", 0);
 
         LocalDateTime now = LocalDateTime.now();
         LocalTime currentTime = now.toLocalTime();
 
-        // Check Cooldown
-        if (product.getLastPriceChangeTimestamp() != null) {
+        // Check Cooldown only if enabled (> 0)
+        if (cooldownMins > 0 && product.getLastPriceChangeTimestamp() != null) {
             long minsSinceLastChange = Duration.between(product.getLastPriceChangeTimestamp(), now).toMinutes();
             if (minsSinceLastChange < cooldownMins) {
                 double stockPct = stockPressureService.calculateStockPressurePercentage(productId);

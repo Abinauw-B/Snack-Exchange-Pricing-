@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping({"/api/reports", "/api"})
 @CrossOrigin(origins = "*")
 public class ReportController {
 
@@ -26,7 +26,7 @@ public class ReportController {
         this.juiceBatchRepository = juiceBatchRepository;
     }
 
-    @GetMapping("/summary")
+    @GetMapping({"/summary", "/dashboard"})
     public ResponseEntity<Map<String, Object>> getSummaryReport() {
         Map<String, Object> report = new HashMap<>();
 
